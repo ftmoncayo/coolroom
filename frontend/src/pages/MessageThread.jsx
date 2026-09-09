@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useMessages } from '../context/MessagesContext'
@@ -76,12 +76,7 @@ function MessageThread() {
   return (
     <div className="flex min-h-screen flex-col bg-bg px-4 py-10">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-text">{participant?.name}</h1>
-          <Link to="/messages" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to messages
-          </Link>
-        </div>
+        <h1 className="text-xl font-semibold text-text">{participant?.name}</h1>
 
         {error && <p className="text-sm text-danger">{error}</p>}
 

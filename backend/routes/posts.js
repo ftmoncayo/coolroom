@@ -47,6 +47,17 @@ router.get('/posts', async (req, res) => {
   res.json({ posts: posts.map(formatPost) })
 })
 
+// A permalink, so it's deliberately unfiltered by isBlocked (unlike the list
+// above) - if you have a link to it (e.g. from a COMMENT notification),
+// you're either the author or someone who already engaged with it.
+router.get('/posts/:id', async (req, res) => {
+  const post = await prisma.post.findUnique({ where: { id: req.params.id }, include: postInclude })
+  if (!post) {
+    return res.status(404).json({ error: 'Post not found' })
+  }
+  res.json({ post: formatPost(post) })
+})
+
 router.post('/posts', async (req, res) => {
   const { content } = req.body || {}
 

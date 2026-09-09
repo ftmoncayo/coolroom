@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import * as api from '../lib/api'
 
 function LookupTable({ type }) {
@@ -259,12 +258,7 @@ function AdminLookups() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text">Lookup data</h1>
-          <Link to="/home" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to home
-          </Link>
-        </div>
+        <h1 className="text-2xl font-semibold text-text">Lookup data</h1>
 
         {error && <p className="text-sm text-danger">{error}</p>}
 

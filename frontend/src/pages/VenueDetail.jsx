@@ -153,9 +153,6 @@ function VenueDetail() {
       <div className="min-h-screen bg-bg px-4 py-10">
         <div className="mx-auto max-w-2xl">
           <p className="text-sm text-danger">{error}</p>
-          <Link to="/venues" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to venues
-          </Link>
         </div>
       </div>
     )
@@ -164,12 +161,6 @@ function VenueDetail() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
-        <div className="flex items-center justify-end">
-          <Link to="/venues" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to venues
-          </Link>
-        </div>
-
         {error && <p className="text-sm text-danger">{error}</p>}
 
         {editing ? (

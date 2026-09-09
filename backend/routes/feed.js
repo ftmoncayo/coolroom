@@ -135,4 +135,29 @@ router.get('/feed', async (req, res) => {
   res.json({ activities: combinedActivities, suggestions })
 })
 
+// A permalink for a single Activity, independent of any feed's pagination or
+// audience-reach rules - if you have a link to it (e.g. from a COMMENT
+// notification), you're either its actor or someone who already commented
+// on it. PROFILE_UPDATED is excluded the same way it's excluded everywhere
+// else (see lib/activityFeed.js), since it's never actually emitted anymore.
+router.get('/activities/:id', async (req, res) => {
+  const activity = await prisma.activity.findUnique({
+    where: { id: req.params.id },
+    include: {
+      actorUser: { include: { profile: { include: { city: true } } } },
+      venue: { select: { id: true, name: true } },
+      business: { select: { id: true, name: true } },
+      notice: true,
+      job: { select: { id: true, title: true } },
+      experience: { select: { roleTitle: true } },
+    },
+  })
+  if (!activity || activity.type === 'PROFILE_UPDATED') {
+    return res.status(404).json({ error: 'Activity not found' })
+  }
+
+  const [formatted] = await formatActivities([activity])
+  res.json({ activity: formatted })
+})
+
 module.exports = router

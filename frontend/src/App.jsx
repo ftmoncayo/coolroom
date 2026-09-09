@@ -26,6 +26,8 @@ import DiscoverPeople from './pages/DiscoverPeople'
 import InviteSomeone from './pages/InviteSomeone'
 import ConnectionRequests from './pages/ConnectionRequests'
 import Notifications from './pages/Notifications'
+import PostDetail from './pages/PostDetail'
+import ActivityDetail from './pages/ActivityDetail'
 import Connections from './pages/Connections'
 import JobsDirectory from './pages/JobsDirectory'
 import JobCreate from './pages/JobCreate'
@@ -257,6 +259,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/posts/:id"
+          element={
+            <ProtectedRoute>
+              <PostDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/activities/:id"
+          element={
+            <ProtectedRoute>
+              <ActivityDetail />
             </ProtectedRoute>
           }
         />

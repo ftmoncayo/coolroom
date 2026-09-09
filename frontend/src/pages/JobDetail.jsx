@@ -117,9 +117,6 @@ function JobDetail() {
       <div className="min-h-screen bg-bg px-4 py-10">
         <div className="mx-auto max-w-2xl">
           <p className="text-sm text-danger">{error}</p>
-          <Link to="/jobs" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to jobs
-          </Link>
         </div>
       </div>
     )
@@ -128,12 +125,7 @@ function JobDetail() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text">Job</h1>
-          <Link to="/jobs" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to jobs
-          </Link>
-        </div>
+        <h1 className="text-2xl font-semibold text-text">Job</h1>
 
         {editing ? (
           <JobForm

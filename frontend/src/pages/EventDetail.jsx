@@ -72,9 +72,6 @@ function EventDetail() {
       <div className="min-h-screen bg-bg px-4 py-10">
         <div className="mx-auto max-w-2xl">
           <p className="text-sm text-danger">{error}</p>
-          <Link to="/events" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to events
-          </Link>
         </div>
       </div>
     )
@@ -83,12 +80,7 @@ function EventDetail() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text">Event</h1>
-          <Link to="/events" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to events
-          </Link>
-        </div>
+        <h1 className="text-2xl font-semibold text-text">Event</h1>
 
         {editing ? (
           <EventForm initial={event} submitLabel="Save" onSubmit={handleSave} onCancel={() => setEditing(false)} />

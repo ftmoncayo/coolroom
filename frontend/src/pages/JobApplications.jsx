@@ -34,12 +34,7 @@ function JobApplications() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text">Applications</h1>
-          <Link to={`/jobs/${id}`} className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to job
-          </Link>
-        </div>
+        <h1 className="text-2xl font-semibold text-text">Applications</h1>
 
         {error && <p className="text-sm text-danger">{error}</p>}
 

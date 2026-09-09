@@ -83,9 +83,6 @@ function PublicProfile() {
       <div className="min-h-screen bg-bg px-4 py-10">
         <div className="mx-auto max-w-2xl">
           <p className="text-sm text-danger">{error}</p>
-          <Link to="/discover" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to discover
-          </Link>
         </div>
       </div>
     )
@@ -96,9 +93,6 @@ function PublicProfile() {
       <div className="min-h-screen bg-bg px-4 py-10">
         <div className="mx-auto max-w-2xl">
           <p className="text-sm text-text-faint">This profile is unavailable.</p>
-          <Link to="/discover" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to discover
-          </Link>
         </div>
       </div>
     )
@@ -111,9 +105,6 @@ function PublicProfile() {
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
         <div className="flex items-center justify-end gap-3">
           <ReportButton targetType="PROFILE" targetId={userId} />
-          <Link to="/discover" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to discover
-          </Link>
         </div>
 
         <ProfileHeader

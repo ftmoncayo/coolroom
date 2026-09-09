@@ -714,6 +714,16 @@ export async function fetchPosts(cityId) {
   return data.posts
 }
 
+export async function fetchPost(id) {
+  const data = await authRequest(`/api/posts/${id}`)
+  return data.post
+}
+
+export async function fetchActivityById(id) {
+  const data = await authRequest(`/api/activities/${id}`)
+  return data.activity
+}
+
 export async function createPost(content) {
   const data = await authRequest('/api/posts', {
     method: 'POST',

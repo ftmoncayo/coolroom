@@ -28,8 +28,10 @@
   --color-warning-bg: #332711;
   --color-danger: #e0917a;
 
-  /* Typography pairing */
-  --font-display: 'Fraunces', 'Georgia', serif;
+  /* Typography pairing: both sans-serif, kept distinct rather than
+     collapsing to one face - Manrope for headings (a plainer, lighter-
+     weight display face than the old Fraunces serif), Work Sans for body. */
+  --font-display: 'Manrope', 'Work Sans', system-ui, sans-serif;
   --font-body: 'Work Sans', system-ui, sans-serif;
 }
 
@@ -45,6 +47,7 @@ h1,
 h2,
 h3 {
   font-family: var(--font-display);
+  font-weight: 600;
 }
 
 :focus-visible {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useNotifications } from '../context/NotificationsContext'
 
@@ -47,9 +47,15 @@ function notificationLink(n) {
   if (n.type === 'MANAGER_NOMINATION_APPROVED' || n.type === 'MANAGER_NOMINATION_DECLINED') {
     return n.targetType === 'VENUE' ? `/venues/${n.targetId}` : `/businesses/${n.targetId}`
   }
-  // Comments/nods target either a Post or an Activity, neither of which has
-  // its own page — Home is where Posts render, and a person's own Activity
-  // always shows on their own Profile regardless of feed reach.
+  // A COMMENT notification's target (Post or Activity) now has its own
+  // permalink, showing that single item and its full comment thread
+  // regardless of feed pagination or audience-reach limits.
+  if (n.type === 'COMMENT') {
+    return n.targetType === 'ACTIVITY' ? `/activities/${n.targetId}` : `/posts/${n.targetId}`
+  }
+  // NOD is the only type still falling through here - it's retired for
+  // Activity targets (see routes/engagement.js) but Posts have no dedicated
+  // page of their own to nod at, so Home is still the best available link.
   return n.targetType === 'ACTIVITY' ? '/profile' : '/home'
 }
 
@@ -184,9 +190,6 @@ function Notifications() {
             >
               {dismissingAll ? 'Dismissing...' : 'Dismiss all'}
             </button>
-            <Link to="/home" className="text-sm text-accent hover:text-accent-hover hover:underline">
-              Back to home
-            </Link>
           </div>
         </div>
 

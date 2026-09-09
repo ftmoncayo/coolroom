@@ -10,7 +10,7 @@ function buildPrimaryLinks(unreadMessageCount) {
   return [
     { to: '/home', label: 'Home' },
     { to: '/profile', label: 'Profile' },
-    { to: '/discover', label: 'People' },
+    { to: '/connections', label: 'People' },
     { to: '/venues', label: 'Venues' },
     { to: '/businesses', label: 'Businesses' },
     { to: '/jobs', label: 'Jobs' },

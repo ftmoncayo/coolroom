@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useProfile } from '../context/ProfileContext'
@@ -140,12 +139,6 @@ function Profile() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
-        <div className="flex items-center justify-end">
-          <Link to="/home" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to home
-          </Link>
-        </div>
-
         {error && <p className="text-sm text-danger">{error}</p>}
 
         {inviteVenue && (

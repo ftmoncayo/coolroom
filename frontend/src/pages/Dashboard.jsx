@@ -20,10 +20,6 @@ function formatDateTime(value) {
   return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-function isTrainingCategory(event) {
-  return (event.category?.name || '').trim().toLowerCase() === 'training'
-}
-
 function HomeEventCard({ event }) {
   return (
     <Link
@@ -41,20 +37,28 @@ function HomeEventCard({ event }) {
   )
 }
 
-function NowRecruitingCard({ venue }) {
+function RecommendedJobCard({ job }) {
   return (
     <Link
-      to={`/venues/${venue.id}`}
+      to={`/jobs/${job.id}`}
       className="flex items-center gap-3 rounded border border-border p-4 hover:border-border-strong hover:bg-surface-hover"
     >
-      <VenueTypeIcon venueTypeName={venue.venueType?.name} className="h-6 w-6 shrink-0 text-text-faint" />
+      <VenueTypeIcon venueTypeName={job.venue.venueType?.name} className="h-6 w-6 shrink-0 text-text-faint" />
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-text">{venue.name}</p>
-        <p className="text-sm text-text-faint">{venue.city?.name || venue.suburb?.name || ''}</p>
+        <p className="font-medium text-text">{job.title}</p>
+        <p className="text-sm text-text-faint">{job.venue.name}</p>
       </div>
       <span className="shrink-0 text-sm text-text-faint">
-        {venue.openJobCount} open role{venue.openJobCount === 1 ? '' : 's'}
+        {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
       </span>
+    </Link>
+  )
+}
+
+function MoreLink({ to }) {
+  return (
+    <Link to={to} className="text-sm text-accent hover:text-accent-hover hover:underline">
+      More
     </Link>
   )
 }
@@ -66,8 +70,10 @@ function Dashboard() {
   const [activities, setActivities] = useState([])
   const [suggestions, setSuggestions] = useState([])
   const [posts, setPosts] = useState([])
-  const [events, setEvents] = useState([])
-  const [recruitingVenues, setRecruitingVenues] = useState([])
+  const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [trainingEvents, setTrainingEvents] = useState([])
+  const [trainingCategoryId, setTrainingCategoryId] = useState(null)
+  const [recommendedJobs, setRecommendedJobs] = useState([])
   const [cityTouched, setCityTouched] = useState(false)
   const [cityOverride, setCityOverride] = useState(null)
   const [postContent, setPostContent] = useState('')
@@ -128,25 +134,29 @@ function Dashboard() {
       .finally(() => setPostsLoading(false))
   }, [cityFilter, profileLoading])
 
-  // Events/Training default to the viewer's own profile location (same
-  // server-side default the Events directory itself falls back on) - no
-  // manual filter control here, just the one always-on default scope.
+  // Events/Training/Now Recruiting all default to the viewer's own profile
+  // location (same server-side default the Events/Jobs directories
+  // themselves fall back on) - no manual filter control here, just the one
+  // always-on default scope, which is also what makes each section's "More"
+  // link to the full directory land on the same results with zero query
+  // params needed: both sides resolve the identical default independently.
   useEffect(() => {
     api
-      .fetchEvents({})
-      .then(setEvents)
+      .fetchRecommendedEvents()
+      .then((data) => {
+        setUpcomingEvents(data.events)
+        setTrainingEvents(data.training)
+        setTrainingCategoryId(data.trainingCategoryId)
+      })
       .catch(() => {})
   }, [])
 
   useEffect(() => {
     api
-      .fetchNowRecruitingVenues()
-      .then(setRecruitingVenues)
+      .fetchRecommendedJobs()
+      .then(setRecommendedJobs)
       .catch(() => {})
   }, [])
-
-  const upcomingEvents = useMemo(() => events.filter((e) => !isTrainingCategory(e)), [events])
-  const trainingEvents = useMemo(() => events.filter(isTrainingCategory), [events])
 
   function updateSuggestion(userId, changes) {
     setSuggestions((prev) => prev.map((p) => (p.id === userId ? { ...p, ...changes } : p)))
@@ -292,7 +302,7 @@ function Dashboard() {
           )}
         </Section>
 
-        <Section title="Events">
+        <Section title="Events" action={<MoreLink to="/events" />}>
           {upcomingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
           <div className="flex flex-col gap-3">
             {upcomingEvents.map((event) => (
@@ -301,7 +311,14 @@ function Dashboard() {
           </div>
         </Section>
 
-        <Section title="Training">
+        <Section
+          title="Training"
+          action={
+            <MoreLink
+              to={trainingCategoryId ? `/events?categoryId=${trainingCategoryId}&categoryName=Training` : '/events'}
+            />
+          }
+        >
           {trainingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming training.</p>}
           <div className="flex flex-col gap-3">
             {trainingEvents.map((event) => (
@@ -310,15 +327,13 @@ function Dashboard() {
           </div>
         </Section>
 
-        <Section title="Now Recruiting">
-          {recruitingVenues.length === 0 && (
-            <p className="text-sm text-text-faint">
-              No venues you follow are recruiting right now.
-            </p>
+        <Section title="Now Recruiting" action={<MoreLink to="/jobs" />}>
+          {recommendedJobs.length === 0 && (
+            <p className="text-sm text-text-faint">No open roles near you right now.</p>
           )}
           <div className="flex flex-col gap-3">
-            {recruitingVenues.map((venue) => (
-              <NowRecruitingCard key={venue.id} venue={venue} />
+            {recommendedJobs.map((job) => (
+              <RecommendedJobCard key={job.id} job={job} />
             ))}
           </div>
         </Section>

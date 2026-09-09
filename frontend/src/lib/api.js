@@ -418,9 +418,13 @@ export async function verifyVenue(id, verified = true) {
   return data.venue
 }
 
-export async function fetchNowRecruitingVenues() {
-  const data = await authRequest('/api/venues/now-recruiting')
-  return data.venues
+export async function fetchRecommendedJobs() {
+  const data = await authRequest('/api/jobs/now-recruiting')
+  return data.jobs
+}
+
+export async function fetchRecommendedEvents() {
+  return authRequest('/api/events/recommended')
 }
 
 export async function fetchAdminVenues(search) {

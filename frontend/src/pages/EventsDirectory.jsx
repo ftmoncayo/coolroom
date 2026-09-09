@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import * as api from '../lib/api'
 import SearchCombobox from '../components/SearchCombobox'
 import LocationScopeFilter from '../components/LocationScopeFilter'
@@ -40,8 +40,17 @@ function EventCard({ event }) {
 }
 
 function EventsDirectory({ mine = false }) {
+  const [searchParams] = useSearchParams()
+  // Seeds the category filter from a "More" link (e.g. Home's Training
+  // section) that already knows exactly which category and id it means -
+  // carries both rather than just the id, since there's no by-id category
+  // lookup to resolve a display name from otherwise.
+  const initialCategoryId = searchParams.get('categoryId')
+  const initialCategoryName = searchParams.get('categoryName')
   const [events, setEvents] = useState([])
-  const [category, setCategory] = useState(null)
+  const [category, setCategory] = useState(
+    initialCategoryId && initialCategoryName ? { id: initialCategoryId, name: initialCategoryName } : null,
+  )
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const { selection, setSelection, scope } = useLocationScopeFilter()

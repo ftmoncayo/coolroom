@@ -183,42 +183,6 @@ router.get('/venues', async (req, res) => {
   res.json({ venues: venues.map(mapVenue) })
 })
 
-// Registered before /venues/:id so "now-recruiting" is never swallowed by
-// that param route. One card per venue the viewer follows that currently has
-// at least one OPEN job - venues with no open jobs (or that aren't followed)
-// never appear here, regardless of how many closed jobs they've posted.
-router.get('/venues/now-recruiting', async (req, res) => {
-  const follows = await prisma.venueFollow.findMany({ where: { userId: req.userId }, select: { venueId: true } })
-  const venueIds = follows.map((f) => f.venueId)
-  if (venueIds.length === 0) {
-    return res.json({ venues: [] })
-  }
-
-  const venues = await prisma.venue.findMany({
-    where: { id: { in: venueIds } },
-    include: {
-      city: { include: { state: { include: { country: true } } } },
-      suburb: true,
-      venueType: true,
-      _count: { select: { jobs: { where: { status: 'OPEN' } } } },
-    },
-  })
-
-  const recruiting = venues
-    .filter((v) => v._count.jobs > 0)
-    .map((v) => ({
-      id: v.id,
-      name: v.name,
-      city: v.city,
-      suburb: v.suburb,
-      venueType: v.venueType,
-      openJobCount: v._count.jobs,
-    }))
-    .sort((a, b) => b.openJobCount - a.openJobCount)
-
-  res.json({ venues: recruiting })
-})
-
 router.get('/venues/:id', async (req, res) => {
   const venue = await prisma.venue.findUnique({
     where: { id: req.params.id },

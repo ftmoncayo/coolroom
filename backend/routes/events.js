@@ -2,6 +2,7 @@ const express = require('express')
 const prisma = require('../lib/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { canEditEventOwner, getEventOwnerManagers, ownerExists } = require('../lib/events')
+const { buildConnectionsAdjacency, getMutualConnectionsAtVenues } = require('../lib/connectionStatus')
 const { createNotification } = require('../lib/notifications')
 const { resolveScopeForRequest, resolveScopeAncestors, venueLocationWhere } = require('../lib/location')
 
@@ -145,6 +146,97 @@ router.get('/events', async (req, res) => {
 
   const shaped = await attachOwnerNames(events.map(shapeEvent))
   res.json({ events: shaped })
+})
+
+const RECOMMENDED_EVENTS_LIMIT = 3
+
+function isTrainingCategory(event) {
+  return (event.category?.name || '').trim().toLowerCase() === 'training'
+}
+
+// Same tiering as Jobs' now-recruiting: followed owner first, then mutual
+// connections at the venue, then skill match, then knowledge match, then
+// soonest-first as a final tie-break. mutualConnectionsAtVenue is always 0
+// for a BUSINESS-owned event (no Experience relation exists for a
+// Business), which is exactly "skip this tier" - it can never win or lose
+// on it, ties just fall through to the next tier.
+function compareRecommendedEvents(a, b) {
+  if (a.isFollowing !== b.isFollowing) return a.isFollowing ? -1 : 1
+  if (b.mutualConnectionsAtVenue !== a.mutualConnectionsAtVenue) {
+    return b.mutualConnectionsAtVenue - a.mutualConnectionsAtVenue
+  }
+  if (b.skillMatchCount !== a.skillMatchCount) return b.skillMatchCount - a.skillMatchCount
+  if (b.knowledgeMatchCount !== a.knowledgeMatchCount) return b.knowledgeMatchCount - a.knowledgeMatchCount
+  return new Date(a.startAt) - new Date(b.startAt)
+}
+
+// Registered before /events/:id so "recommended" is never swallowed by that
+// param route. Up to 3 upcoming non-Training and up to 3 upcoming Training
+// events from any venue/business within the viewer's location scope (not
+// just followed ones) - same idea as Jobs' now-recruiting, split by category
+// since Home shows them as two separate sections.
+router.get('/events/recommended', async (req, res) => {
+  const scope = await resolveScopeForRequest(req)
+  const scopeAncestors = await resolveScopeAncestors(scope)
+
+  const now = new Date()
+  const and = [{ OR: [{ endAt: { gte: now } }, { endAt: null, startAt: { gte: now } }] }]
+  const venueScopeWhere = venueLocationWhere(scopeAncestors)
+  if (Object.keys(venueScopeWhere).length) and.push({ locationVenue: venueScopeWhere })
+
+  const events = await prisma.event.findMany({
+    where: { AND: and },
+    include: eventInclude,
+    orderBy: { startAt: 'asc' },
+  })
+
+  const [profile, venueFollows, businessFollows, adjacency] = await Promise.all([
+    prisma.profile.findUnique({ where: { userId: req.userId }, include: { skills: true, knowledgeAreas: true } }),
+    prisma.venueFollow.findMany({ where: { userId: req.userId } }),
+    prisma.businessFollow.findMany({ where: { userId: req.userId } }),
+    buildConnectionsAdjacency(),
+  ])
+  const mySkillIds = new Set((profile?.skills || []).map((s) => s.id))
+  const myKnowledgeAreaIds = new Set((profile?.knowledgeAreas || []).map((k) => k.id))
+  const followedVenueIds = new Set(venueFollows.map((f) => f.venueId))
+  const followedBusinessIds = new Set(businessFollows.map((f) => f.businessId))
+  const myConnections = adjacency.get(req.userId) || new Set()
+
+  const venueOwnedIds = [...new Set(events.filter((e) => e.ownerType === 'VENUE').map((e) => e.ownerId))]
+  const mutualConnectionsMap = await getMutualConnectionsAtVenues(venueOwnedIds, myConnections)
+
+  const shapedWithOwners = await attachOwnerNames(events.map(shapeEvent))
+  const shaped = shapedWithOwners.map((event) => {
+    const skillIds = event.skills.map((s) => s.id)
+    const knowledgeAreaIds = event.knowledgeAreas.map((k) => k.id)
+    return {
+      ...event,
+      isFollowing:
+        event.ownerType === 'VENUE' ? followedVenueIds.has(event.ownerId) : followedBusinessIds.has(event.ownerId),
+      mutualConnectionsAtVenue: event.ownerType === 'VENUE' ? mutualConnectionsMap.get(event.ownerId) || 0 : 0,
+      skillMatchCount: skillIds.filter((id) => mySkillIds.has(id)).length,
+      knowledgeMatchCount: knowledgeAreaIds.filter((id) => myKnowledgeAreaIds.has(id)).length,
+    }
+  })
+
+  const upcoming = shaped
+    .filter((e) => !isTrainingCategory(e))
+    .sort(compareRecommendedEvents)
+    .slice(0, RECOMMENDED_EVENTS_LIMIT)
+  const training = shaped
+    .filter(isTrainingCategory)
+    .sort(compareRecommendedEvents)
+    .slice(0, RECOMMENDED_EVENTS_LIMIT)
+
+  // Looked up independently of the results above (rather than read off
+  // training[0]) so the Training section's "More" link still has a category
+  // to carry over even when there's nothing currently upcoming to show.
+  const trainingCategory = await prisma.eventCategory.findFirst({
+    where: { name: { equals: 'Training', mode: 'insensitive' } },
+    select: { id: true },
+  })
+
+  res.json({ events: upcoming, training, trainingCategoryId: trainingCategory?.id || null })
 })
 
 router.get('/events/:id', async (req, res) => {

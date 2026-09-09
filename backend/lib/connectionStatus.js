@@ -54,9 +54,34 @@ async function buildConnectionsAdjacency() {
   return adjacency
 }
 
+// Counts, per venue, how many of the viewer's accepted connections have a
+// current or previous Experience entry there. Originally lived in
+// routes/jobs.js (Job Applications' mutual-connections column); shared here
+// so routes/events.js can reuse the exact same computation for its own
+// recommended-events ordering.
+async function getMutualConnectionsAtVenues(venueIds, myConnections) {
+  if (venueIds.length === 0 || myConnections.size === 0) return new Map()
+
+  const experiences = await prisma.experience.findMany({
+    where: { venueId: { in: venueIds }, profile: { userId: { in: [...myConnections] } } },
+    select: { venueId: true, profile: { select: { userId: true } } },
+  })
+
+  const usersByVenue = new Map()
+  for (const e of experiences) {
+    if (!usersByVenue.has(e.venueId)) usersByVenue.set(e.venueId, new Set())
+    usersByVenue.get(e.venueId).add(e.profile.userId)
+  }
+
+  const counts = new Map()
+  for (const [venueId, userIds] of usersByVenue) counts.set(venueId, userIds.size)
+  return counts
+}
+
 module.exports = {
   buildConnectionStatusMap,
   connectionStatusFor,
   getAcceptedConnectionUserIds,
   buildConnectionsAdjacency,
+  getMutualConnectionsAtVenues,
 }

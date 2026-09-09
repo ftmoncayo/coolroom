@@ -960,3 +960,21 @@ export async function mergeAdminLookupEntries(type, sourceId, targetId) {
     body: JSON.stringify({ sourceId, targetId }),
   })
 }
+
+export async function submitFeedback(category, message) {
+  const data = await authRequest('/api/feedback', {
+    method: 'POST',
+    body: JSON.stringify({ category, message }),
+  })
+  return data.feedback
+}
+
+export async function fetchAdminFeedback() {
+  const data = await authRequest('/api/admin/feedback')
+  return data.feedback
+}
+
+export async function toggleFeedbackReviewed(id) {
+  const data = await authRequest(`/api/admin/feedback/${id}/reviewed`, { method: 'PUT' })
+  return data.feedback
+}

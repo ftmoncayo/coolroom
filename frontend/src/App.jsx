@@ -20,6 +20,7 @@ import AdminUsers from './pages/AdminUsers'
 import AdminJobs from './pages/AdminJobs'
 import AdminLookups from './pages/AdminLookups'
 import AdminRegistration from './pages/AdminRegistration'
+import AdminFeedback from './pages/AdminFeedback'
 import DiscoverPeople from './pages/DiscoverPeople'
 import InviteSomeone from './pages/InviteSomeone'
 import ConnectionRequests from './pages/ConnectionRequests'
@@ -32,6 +33,7 @@ import JobApplications from './pages/JobApplications'
 import EventsDirectory from './pages/EventsDirectory'
 import EventCreate from './pages/EventCreate'
 import EventDetail from './pages/EventDetail'
+import Feedback from './pages/Feedback'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import TopNav from './components/TopNav'
@@ -256,6 +258,14 @@ function App() {
           }
         />
         <Route
+          path="/feedback"
+          element={
+            <ProtectedRoute>
+              <Feedback />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/venues"
           element={
             <AdminRoute allowVenueAdmin>
@@ -300,6 +310,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminRegistration />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/feedback"
+          element={
+            <AdminRoute>
+              <AdminFeedback />
             </AdminRoute>
           }
         />

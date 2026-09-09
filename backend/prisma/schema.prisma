@@ -60,6 +60,8 @@ model User {
 
   createdEvents  Event[]
   eventInterests EventInterest[]
+
+  feedback Feedback[]
 }
 
 enum ActivityType {
@@ -741,6 +743,23 @@ model EventInterest {
   createdAt DateTime            @default(now())
 
   @@unique([eventId, userId])
+}
+
+enum FeedbackCategory {
+  WORKING_WELL
+  NOT_WORKING
+  SUGGESTION
+  OTHER
+}
+
+model Feedback {
+  id           String           @id @default(uuid())
+  authorUserId String
+  authorUser   User             @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  category     FeedbackCategory
+  message      String
+  reviewed     Boolean          @default(false)
+  createdAt    DateTime         @default(now())
 }
 
 // Single-row settings, always at the fixed id "singleton" (seeded by its own

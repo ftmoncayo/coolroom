@@ -14,6 +14,7 @@ function buildPrimaryLinks() {
     { to: '/businesses', label: 'Businesses' },
     { to: '/jobs', label: 'Jobs' },
     { to: '/events', label: 'Events' },
+    { to: '/feedback', label: 'Feedback' },
   ]
 }
 
@@ -43,6 +44,7 @@ function buildAdminLinks(user, unverifiedVenueCount, unverifiedBusinessCount) {
     ...(user?.isAdmin ? [{ to: '/admin/jobs', label: 'Job Admin' }] : []),
     ...(user?.isAdmin ? [{ to: '/admin/lookups', label: 'Lookup Data' }] : []),
     ...(user?.isAdmin ? [{ to: '/admin/registration', label: 'Registration' }] : []),
+    ...(user?.isAdmin ? [{ to: '/admin/feedback', label: 'Feedback Admin' }] : []),
   ]
 }
 

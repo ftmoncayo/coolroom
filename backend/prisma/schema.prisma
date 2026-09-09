@@ -62,6 +62,10 @@ model User {
   eventInterests EventInterest[]
 
   feedback Feedback[]
+
+  conversationsAsUserA Conversation[] @relation("ConversationUserA")
+  conversationsAsUserB Conversation[] @relation("ConversationUserB")
+  sentMessages         Message[]
 }
 
 enum ActivityType {
@@ -743,6 +747,39 @@ model EventInterest {
   createdAt DateTime            @default(now())
 
   @@unique([eventId, userId])
+}
+
+// 1:1 only for now - userAId/userBId are always stored sorted (whichever of
+// the two ids sorts first goes in userAId, see sortedPair in
+// routes/conversations.js) purely so @@unique catches both orderings of the
+// same pair; the field names carry no other meaning; neither participant is
+// "the owner".
+model Conversation {
+  id        String   @id @default(uuid())
+  userAId   String
+  userA     User     @relation("ConversationUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId   String
+  userB     User     @relation("ConversationUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  messages Message[]
+
+  @@unique([userAId, userBId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUserId   String
+  senderUser     User         @relation(fields: [senderUserId], references: [id], onDelete: Cascade)
+  content        String
+  createdAt      DateTime     @default(now())
+  // Set the moment the recipient opens the thread (see GET
+  // /conversations/:id/messages) - null means still unread.
+  readAt         DateTime?
+
+  @@index([conversationId, createdAt])
 }
 
 enum FeedbackCategory {

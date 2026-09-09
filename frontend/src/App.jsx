@@ -34,6 +34,8 @@ import EventsDirectory from './pages/EventsDirectory'
 import EventCreate from './pages/EventCreate'
 import EventDetail from './pages/EventDetail'
 import Feedback from './pages/Feedback'
+import Messages from './pages/Messages'
+import MessageThread from './pages/MessageThread'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import TopNav from './components/TopNav'
@@ -262,6 +264,22 @@ function App() {
           element={
             <ProtectedRoute>
               <Feedback />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/messages/:id"
+          element={
+            <ProtectedRoute>
+              <MessageThread />
             </ProtectedRoute>
           }
         />

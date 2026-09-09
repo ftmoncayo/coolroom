@@ -67,6 +67,11 @@ function PublicProfile() {
     setData((prev) => ({ ...prev, connectionStatus: 'none', connectionRequestId: null }))
   }
 
+  async function handleMessage() {
+    const conversation = await api.startConversation(userId)
+    navigate(`/messages/${conversation.id}`)
+  }
+
   if (loading) return null
 
   if (error) {
@@ -122,13 +127,22 @@ function PublicProfile() {
             onDecline={handleDecline}
           />
           {data.connectionStatus === 'connected' && (
-            <button
-              type="button"
-              onClick={handleRemove}
-              className="text-sm text-danger hover:underline"
-            >
-              Remove connection
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleMessage}
+                className="rounded border border-border-strong px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover"
+              >
+                Message
+              </button>
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="text-sm text-danger hover:underline"
+              >
+                Remove connection
+              </button>
+            </>
           )}
         </div>
 

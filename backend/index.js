@@ -19,6 +19,7 @@ const notificationsRouter = require('./routes/notifications')
 const lookupAdminRouter = require('./routes/lookupAdmin')
 const registrationRouter = require('./routes/registration')
 const feedbackRouter = require('./routes/feedback')
+const conversationsRouter = require('./routes/conversations')
 
 const app = express()
 const port = process.env.PORT || 3001
@@ -53,6 +54,7 @@ app.use('/api', jobsRouter)
 app.use('/api', eventsRouter)
 app.use('/api', notificationsRouter)
 app.use('/api', feedbackRouter)
+app.use('/api', conversationsRouter)
 app.use('/api/admin', lookupAdminRouter)
 
 app.listen(port, () => {

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import * as api from '../lib/api'
 import ConnectionButton from '../components/ConnectionButton'
 import PersonCard from '../components/PersonCard'
 
 function Connections() {
+  const navigate = useNavigate()
   const [connections, setConnections] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -17,6 +18,16 @@ function Connections() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
+
+  async function handleMessage(userId) {
+    setError('')
+    try {
+      const conversation = await api.startConversation(userId)
+      navigate(`/messages/${conversation.id}`)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
   async function handleRemove(userId) {
     setError('')
@@ -52,6 +63,13 @@ function Connections() {
             <PersonCard key={c.id} person={c}>
               <div className="flex items-center gap-3">
                 <ConnectionButton status="connected" />
+                <button
+                  type="button"
+                  onClick={() => handleMessage(c.id)}
+                  className="text-sm text-accent hover:text-accent-hover hover:underline"
+                >
+                  Message
+                </button>
                 <button
                   type="button"
                   disabled={removingId === c.id}

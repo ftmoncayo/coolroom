@@ -14,6 +14,7 @@ function buildPrimaryLinks() {
     { to: '/businesses', label: 'Businesses' },
     { to: '/jobs', label: 'Jobs' },
     { to: '/events', label: 'Events' },
+    { to: '/messages', label: 'Messages' },
     { to: '/feedback', label: 'Feedback' },
   ]
 }

@@ -978,3 +978,28 @@ export async function toggleFeedbackReviewed(id) {
   const data = await authRequest(`/api/admin/feedback/${id}/reviewed`, { method: 'PUT' })
   return data.feedback
 }
+
+export async function startConversation(toUserId) {
+  const data = await authRequest('/api/conversations', {
+    method: 'POST',
+    body: JSON.stringify({ toUserId }),
+  })
+  return data.conversation
+}
+
+export async function fetchConversations() {
+  const data = await authRequest('/api/conversations')
+  return data.conversations
+}
+
+export async function fetchMessages(conversationId) {
+  return authRequest(`/api/conversations/${conversationId}/messages`)
+}
+
+export async function sendMessage(conversationId, content) {
+  const data = await authRequest(`/api/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  })
+  return data.message
+}

@@ -75,7 +75,9 @@ function KnowledgeAreaEditor({ profile, onAdd, onRemove }) {
                 <tr key={area.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-2 text-text">{area.name}</td>
                   <td className="px-4 py-2">
-                    <Tag level={area.level}>{levelLabel(area.level)}</Tag>
+                    <Tag level={area.level}>
+                      <span className="sr-only">{levelLabel(area.level)}</span>
+                    </Tag>
                   </td>
                   <td className="px-4 py-2 text-text-muted">{area.verifiedBy}</td>
                   <td className="px-4 py-2 text-right">

@@ -39,8 +39,19 @@ async function getAcceptedConnectionUserIds(userId) {
   return new Set(accepted.map((r) => (r.fromUserId === userId ? r.toUserId : r.fromUserId)))
 }
 
-async function buildConnectionsAdjacency() {
-  const accepted = await prisma.connectionRequest.findMany({ where: { status: 'ACCEPTED' } })
+// Adjacency scoped to just the given users - only rows where one side is in
+// userIds are fetched, so cost tracks the size of that list (e.g. one page of
+// candidate profiles) rather than every accepted connection on the platform.
+// Edges to a counterpart outside userIds are still included (that's the
+// point: it's still a real connection of a listed user), only the fetch's
+// WHERE clause is scoped, not the resulting graph's edges.
+async function buildConnectionsAdjacencyFor(userIds) {
+  const ids = [...new Set(userIds)]
+  if (ids.length === 0) return new Map()
+
+  const accepted = await prisma.connectionRequest.findMany({
+    where: { status: 'ACCEPTED', OR: [{ fromUserId: { in: ids } }, { toUserId: { in: ids } }] },
+  })
 
   const adjacency = new Map()
   function link(a, b) {
@@ -82,6 +93,6 @@ module.exports = {
   buildConnectionStatusMap,
   connectionStatusFor,
   getAcceptedConnectionUserIds,
-  buildConnectionsAdjacency,
+  buildConnectionsAdjacencyFor,
   getMutualConnectionsAtVenues,
 }

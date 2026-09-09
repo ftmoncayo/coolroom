@@ -2,7 +2,11 @@ const express = require('express')
 const prisma = require('../lib/prisma')
 const { requireAuth, requireAdmin } = require('../middleware/auth')
 const { canEditVenue } = require('./venues')
-const { buildConnectionsAdjacency, getMutualConnectionsAtVenues } = require('../lib/connectionStatus')
+const {
+  getAcceptedConnectionUserIds,
+  buildConnectionsAdjacencyFor,
+  getMutualConnectionsAtVenues,
+} = require('../lib/connectionStatus')
 const { displayName } = require('../lib/displayName')
 const { resolveScopeForRequest, resolveScopeAncestors, venueLocationWhere } = require('../lib/location')
 
@@ -54,10 +58,10 @@ async function getAppliedJobIds(userId, jobIds) {
 // viewer's own Skills/KnowledgeAreas (for match counts), which venues they
 // follow/favourite, and who they're connected to (for mutual-connections).
 async function getViewerContext(userId) {
-  const [profile, venueFollows, adjacency] = await Promise.all([
+  const [profile, venueFollows, myConnections] = await Promise.all([
     prisma.profile.findUnique({ where: { userId }, include: { skills: true, knowledgeAreas: true } }),
     prisma.venueFollow.findMany({ where: { userId } }),
-    buildConnectionsAdjacency(),
+    getAcceptedConnectionUserIds(userId),
   ])
 
   return {
@@ -65,7 +69,7 @@ async function getViewerContext(userId) {
     myKnowledgeAreaIds: new Set((profile?.knowledgeAreas || []).map((k) => k.id)),
     followedVenueIds: new Set(venueFollows.map((f) => f.venueId)),
     favouritedVenueIds: new Set(venueFollows.filter((f) => f.isFavourite).map((f) => f.venueId)),
-    myConnections: adjacency.get(userId) || new Set(),
+    myConnections,
   }
 }
 
@@ -129,7 +133,10 @@ router.get('/jobs', async (req, res) => {
   // "My Jobs" default to showing every status so closed jobs stay visible.
   const status = statusParam || (venueId || mine ? undefined : 'OPEN')
 
-  const managedVenueIds = await getManagedVenueIds(req.userId)
+  // Independent of each other - managedVenueIds only gates the where-clause,
+  // ctx only shapes the results after the fact - so fetch them concurrently
+  // instead of one after another.
+  const [managedVenueIds, ctx] = await Promise.all([getManagedVenueIds(req.userId), getViewerContext(req.userId)])
 
   if (mine && managedVenueIds.length === 0) {
     return res.json({ jobs: [], sort: 'recent' })
@@ -152,10 +159,11 @@ router.get('/jobs', async (req, res) => {
 
   const jobs = await prisma.job.findMany({ where, include: jobInclude, orderBy: { createdAt: 'desc' } })
 
-  const ctx = await getViewerContext(req.userId)
   const jobVenueIds = [...new Set(jobs.map((j) => j.venueId))]
-  const mutualConnectionsMap = await getMutualConnectionsAtVenues(jobVenueIds, ctx.myConnections)
-  const appliedJobIds = await getAppliedJobIds(req.userId, jobs.map((j) => j.id))
+  const [mutualConnectionsMap, appliedJobIds] = await Promise.all([
+    getMutualConnectionsAtVenues(jobVenueIds, ctx.myConnections),
+    getAppliedJobIds(req.userId, jobs.map((j) => j.id)),
+  ])
 
   const shaped = jobs.map((j) => shapeJob(j, ctx, mutualConnectionsMap, appliedJobIds))
 
@@ -191,7 +199,8 @@ const RECOMMENDED_JOBS_LIMIT = 3
 router.get('/jobs/now-recruiting', async (req, res) => {
   const scope = await resolveScopeForRequest(req)
   const scopeAncestors = await resolveScopeAncestors(scope)
-  const managedVenueIds = await getManagedVenueIds(req.userId)
+
+  const [managedVenueIds, ctx] = await Promise.all([getManagedVenueIds(req.userId), getViewerContext(req.userId)])
 
   const venueScopeWhere = venueLocationWhere(scopeAncestors)
   const where = {
@@ -204,10 +213,11 @@ router.get('/jobs/now-recruiting', async (req, res) => {
 
   const jobs = await prisma.job.findMany({ where, include: jobInclude, orderBy: { createdAt: 'desc' } })
 
-  const ctx = await getViewerContext(req.userId)
   const jobVenueIds = [...new Set(jobs.map((j) => j.venueId))]
-  const mutualConnectionsMap = await getMutualConnectionsAtVenues(jobVenueIds, ctx.myConnections)
-  const appliedJobIds = await getAppliedJobIds(req.userId, jobs.map((j) => j.id))
+  const [mutualConnectionsMap, appliedJobIds] = await Promise.all([
+    getMutualConnectionsAtVenues(jobVenueIds, ctx.myConnections),
+    getAppliedJobIds(req.userId, jobs.map((j) => j.id)),
+  ])
 
   const shaped = jobs
     .map((j) => shapeJob(j, ctx, mutualConnectionsMap, appliedJobIds))
@@ -425,7 +435,7 @@ router.get('/jobs/:id/applications', async (req, res) => {
   // Mutual connections are scoped to each applicant, not the viewer: how many
   // of the applicant's own accepted connections have current/previous
   // Experience at this venue.
-  const adjacency = await buildConnectionsAdjacency()
+  const adjacency = await buildConnectionsAdjacencyFor(applications.map((a) => a.applicantUserId))
   const applicantConnections = applications.map((a) => adjacency.get(a.applicantUserId) || new Set())
   const allConnectedUserIds = [...new Set(applicantConnections.flatMap((s) => [...s]))]
 

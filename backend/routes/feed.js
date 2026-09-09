@@ -3,6 +3,7 @@ const prisma = require('../lib/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { getCommonGroundPeople } = require('./discover')
 const { formatActivities } = require('../lib/activityFeed')
+const { buildConnectionStatusMap } = require('../lib/connectionStatus')
 const { resolveScopeForRequest, resolveScopeAncestors, profileLocationWhere } = require('../lib/location')
 
 const router = express.Router()
@@ -13,29 +14,50 @@ const ACTIVITY_LIMIT = 50
 const SIGNUP_LIMIT = 20
 
 router.get('/feed', async (req, res) => {
-  const scope = await resolveScopeForRequest(req)
-  const scopeAncestors = await resolveScopeAncestors(scope)
-  const suggestionScope = await resolveScopeForRequest(req, 'suggestion')
-  const suggestionScopeAncestors = await resolveScopeAncestors(suggestionScope)
+  // Both the activity scope and the suggestion scope default to the viewer's
+  // own profile location when unfiltered - fetch that profile (at most) once
+  // up front and hand it to both resolveScopeForRequest calls, rather than
+  // each independently re-fetching the identical row.
+  const needsDefaultScope = req.query.scopeType === undefined && req.query.scopeId === undefined
+  const needsDefaultSuggestionScope =
+    req.query.suggestionScopeType === undefined && req.query.suggestionScopeId === undefined
+  const viewerProfile =
+    needsDefaultScope || needsDefaultSuggestionScope
+      ? await prisma.profile.findUnique({ where: { userId: req.userId }, include: { suburb: true } })
+      : null
 
-  const connectionRequests = await prisma.connectionRequest.findMany({
-    where: { status: 'ACCEPTED', OR: [{ fromUserId: req.userId }, { toUserId: req.userId }] },
-  })
-  const connectionUserIds = connectionRequests.map((r) =>
-    r.fromUserId === req.userId ? r.toUserId : r.fromUserId,
-  )
-
-  const [venueFollows, businessFollows, managedVenues, managedBusinesses, workedVenues] = await Promise.all([
-    prisma.venueFollow.findMany({ where: { userId: req.userId } }),
-    prisma.businessFollow.findMany({ where: { userId: req.userId } }),
-    prisma.venueManager.findMany({ where: { userId: req.userId }, select: { venueId: true } }),
-    prisma.businessManager.findMany({ where: { userId: req.userId }, select: { businessId: true } }),
-    prisma.experience.findMany({
-      where: { profile: { userId: req.userId } },
-      select: { venueId: true },
-      distinct: ['venueId'],
-    }),
+  const [scope, suggestionScope] = await Promise.all([
+    resolveScopeForRequest(req, '', true, viewerProfile),
+    resolveScopeForRequest(req, 'suggestion', true, viewerProfile),
   ])
+  const [scopeAncestors, suggestionScopeAncestors] = await Promise.all([
+    resolveScopeAncestors(scope),
+    resolveScopeAncestors(suggestionScope),
+  ])
+
+  // statusByUserId also gives us connectionUserIds (every 'connected' entry)
+  // for free, and is handed to getCommonGroundPeople below so it doesn't
+  // have to re-fetch the same connectionRequest rows for the suggestions
+  // computation.
+  const [statusByUserId, [venueFollows, businessFollows, managedVenues, managedBusinesses, workedVenues]] =
+    await Promise.all([
+      buildConnectionStatusMap(req.userId),
+      Promise.all([
+        prisma.venueFollow.findMany({ where: { userId: req.userId } }),
+        prisma.businessFollow.findMany({ where: { userId: req.userId } }),
+        prisma.venueManager.findMany({ where: { userId: req.userId }, select: { venueId: true } }),
+        prisma.businessManager.findMany({ where: { userId: req.userId }, select: { businessId: true } }),
+        prisma.experience.findMany({
+          where: { profile: { userId: req.userId } },
+          select: { venueId: true },
+          distinct: ['venueId'],
+        }),
+      ]),
+    ])
+
+  const connectionUserIds = [...statusByUserId.entries()]
+    .filter(([, v]) => v.status === 'connected')
+    .map(([id]) => id)
 
   const followedVenueIds = venueFollows.map((f) => f.venueId)
   const favouritedVenueIds = new Set(venueFollows.filter((f) => f.isFavourite).map((f) => f.venueId))
@@ -80,51 +102,57 @@ router.get('/feed', async (req, res) => {
   // since their placement can't be confirmed.
   const profileScopeWhere = scopeAncestors ? profileLocationWhere(scopeAncestors) : null
 
-  const activities = orConditions.length
-    ? await prisma.activity.findMany({
-        where: {
-          type: { notIn: ['SIGNUP', 'PROFILE_UPDATED'] },
-          AND: [
-            { OR: orConditions },
-            { OR: [{ actorUserId: null }, { actorUser: { isBlocked: false } }] },
-            ...(profileScopeWhere ? [{ actorUser: { profile: profileScopeWhere } }] : []),
-          ],
-        },
-        include: {
-          actorUser: { include: { profile: { include: { city: true } } } },
-          venue: { select: { id: true, name: true } },
-          business: { select: { id: true, name: true } },
-          notice: true,
-          job: { select: { id: true, title: true } },
-          experience: { select: { roleTitle: true } },
-        },
-        // Ordering/limiting by lastEngagementAt (not createdAt) so a notice
-        // bumped by a fresh comment can resurface even if its original post
-        // time would otherwise put it outside the take window.
-        orderBy: { lastEngagementAt: 'desc' },
-        take: ACTIVITY_LIMIT,
-      })
-    : []
+  // These three don't depend on each other - the main activity query and the
+  // signup query filter on disjoint `type`s, and the suggestions computation
+  // only needs scope + the already-fetched statusByUserId - so run them
+  // concurrently instead of one after another.
+  const [activities, signupActivitiesRaw, commonGroundPeople] = await Promise.all([
+    orConditions.length
+      ? prisma.activity.findMany({
+          where: {
+            type: { notIn: ['SIGNUP', 'PROFILE_UPDATED'] },
+            AND: [
+              { OR: orConditions },
+              { OR: [{ actorUserId: null }, { actorUser: { isBlocked: false } }] },
+              ...(profileScopeWhere ? [{ actorUser: { profile: profileScopeWhere } }] : []),
+            ],
+          },
+          include: {
+            actorUser: { include: { profile: { include: { city: true } } } },
+            venue: { select: { id: true, name: true } },
+            business: { select: { id: true, name: true } },
+            notice: true,
+            job: { select: { id: true, title: true } },
+            experience: { select: { roleTitle: true } },
+          },
+          // Ordering/limiting by lastEngagementAt (not createdAt) so a notice
+          // bumped by a fresh comment can resurface even if its original post
+          // time would otherwise put it outside the take window.
+          orderBy: { lastEngagementAt: 'desc' },
+          take: ACTIVITY_LIMIT,
+        })
+      : [],
+    prisma.activity.findMany({
+      where: {
+        type: 'SIGNUP',
+        actorUserId: { not: req.userId },
+        actorUser: { isBlocked: false, ...(profileScopeWhere ? { profile: profileScopeWhere } : {}) },
+      },
+      include: { actorUser: { include: { profile: { include: { city: true } } } } },
+      orderBy: { createdAt: 'desc' },
+      take: SIGNUP_LIMIT,
+    }),
+    getCommonGroundPeople(req.userId, suggestionScopeAncestors, { statusByUserId }),
+  ])
 
-  const feed = await formatActivities(activities, {
-    isFavourited: (a) =>
-      (a.venueId && favouritedVenueIds.has(a.venueId)) ||
-      (a.businessId && favouritedBusinessIds.has(a.businessId)),
-  })
-
-  const commonGroundPeople = await getCommonGroundPeople(req.userId, suggestionScopeAncestors)
-
-  const signupActivitiesRaw = await prisma.activity.findMany({
-    where: {
-      type: 'SIGNUP',
-      actorUserId: { not: req.userId },
-      actorUser: { isBlocked: false, ...(profileScopeWhere ? { profile: profileScopeWhere } : {}) },
-    },
-    include: { actorUser: { include: { profile: { include: { city: true } } } } },
-    orderBy: { createdAt: 'desc' },
-    take: SIGNUP_LIMIT,
-  })
-  const signupFeed = await formatActivities(signupActivitiesRaw)
+  const [feed, signupFeed] = await Promise.all([
+    formatActivities(activities, {
+      isFavourited: (a) =>
+        (a.venueId && favouritedVenueIds.has(a.venueId)) ||
+        (a.businessId && favouritedBusinessIds.has(a.businessId)),
+    }),
+    formatActivities(signupActivitiesRaw),
+  ])
 
   const suggestions = commonGroundPeople.slice(0, SUGGESTION_LIMIT)
 

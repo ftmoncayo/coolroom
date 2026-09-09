@@ -5,7 +5,7 @@ const { sanitize } = require('../lib/sanitizeHtml')
 const {
   buildConnectionStatusMap,
   connectionStatusFor,
-  buildConnectionsAdjacency,
+  buildConnectionsAdjacencyFor,
 } = require('../lib/connectionStatus')
 const { formatActivities, formatActor } = require('../lib/activityFeed')
 const {
@@ -233,9 +233,10 @@ router.get('/:userId', async (req, res) => {
   }
   const profile = await attachEndorsementLevels(rawProfile)
 
-  const statusMap = await buildConnectionStatusMap(req.userId)
-
-  const adjacency = await buildConnectionsAdjacency()
+  const [statusMap, adjacency] = await Promise.all([
+    buildConnectionStatusMap(req.userId),
+    buildConnectionsAdjacencyFor([req.userId, profile.userId]),
+  ])
   const myConnections = adjacency.get(req.userId) || new Set()
   const theirConnections = adjacency.get(profile.userId) || new Set()
   const mutualConnectionIds = [...myConnections].filter((id) => theirConnections.has(id))

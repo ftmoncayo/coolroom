@@ -55,13 +55,21 @@ function parseScopeParam(type, id) {
 //    still governs validity; a malformed explicit value resolves to no
 //    filter rather than silently falling back to the default, since the
 //    caller clearly intended something specific).
-async function resolveScopeForRequest(req, prefix = '', allowDefault = true) {
+// `preloadedProfile`, when passed, is used instead of a fresh fetch - lets a
+// caller that needs the default scope resolved under more than one prefix
+// (e.g. feed.js's activity scope and suggestion scope) fetch the viewer's own
+// profile once and reuse it, rather than each resolveScopeForRequest call
+// independently re-fetching the identical row.
+async function resolveScopeForRequest(req, prefix = '', allowDefault = true, preloadedProfile = undefined) {
   const rawType = req.query[prefix ? `${prefix}ScopeType` : 'scopeType']
   const rawId = req.query[prefix ? `${prefix}ScopeId` : 'scopeId']
 
   if (rawType === undefined && rawId === undefined) {
     if (!allowDefault) return null
-    const profile = await prisma.profile.findUnique({ where: { userId: req.userId }, include: { suburb: true } })
+    const profile =
+      preloadedProfile !== undefined
+        ? preloadedProfile
+        : await prisma.profile.findUnique({ where: { userId: req.userId }, include: { suburb: true } })
     return resolveLocationScope(profile)
   }
   if (rawType === 'NONE') return null

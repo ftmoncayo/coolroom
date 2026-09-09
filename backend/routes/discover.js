@@ -4,7 +4,7 @@ const { requireAuth } = require('../middleware/auth')
 const {
   buildConnectionStatusMap,
   connectionStatusFor,
-  buildConnectionsAdjacency,
+  buildConnectionsAdjacencyFor,
 } = require('../lib/connectionStatus')
 const { resolveScopeForRequest, resolveScopeAncestors, profileLocationWhere } = require('../lib/location')
 
@@ -29,35 +29,46 @@ function compareShared(a, b) {
   return b.shared.knowledgeAreas - a.shared.knowledgeAreas
 }
 
-async function getCommonGroundPeople(userId, scopeAncestors = null) {
-  const myProfile = await prisma.profile.findUnique({
-    where: { userId },
-    include: { skills: true, knowledgeAreas: true, experiences: { select: { venueId: true } } },
-  })
-
-  const statusByUserId = await buildConnectionStatusMap(userId)
+// `precomputed.statusByUserId`, when passed, is used instead of a fresh
+// buildConnectionStatusMap fetch - lets a caller that already computed the
+// viewer's own connection-status map for something else (e.g. feed.js, which
+// needs it anyway to filter the activity feed) reuse it here instead of
+// re-fetching the identical rows.
+async function getCommonGroundPeople(userId, scopeAncestors = null, { statusByUserId: precomputed } = {}) {
+  const [myProfile, statusByUserId, profiles] = await Promise.all([
+    prisma.profile.findUnique({
+      where: { userId },
+      include: { skills: true, knowledgeAreas: true, experiences: { select: { venueId: true } } },
+    }),
+    precomputed || buildConnectionStatusMap(userId),
+    prisma.profile.findMany({
+      where: {
+        userId: { not: userId },
+        user: { isBlocked: false },
+        ...profileLocationWhere(scopeAncestors),
+      },
+      include: {
+        user: true,
+        city: true,
+        skills: true,
+        knowledgeAreas: true,
+        experiences: { select: { venueId: true } },
+      },
+    }),
+  ])
 
   const mySkillIds = new Set((myProfile?.skills || []).map((s) => s.id))
   const myKnowledgeAreaIds = new Set((myProfile?.knowledgeAreas || []).map((k) => k.id))
   const myVenueIds = new Set((myProfile?.experiences || []).map((e) => e.venueId))
 
-  const adjacency = await buildConnectionsAdjacency()
-  const myConnections = adjacency.get(userId) || new Set()
-
-  const profiles = await prisma.profile.findMany({
-    where: {
-      userId: { not: userId },
-      user: { isBlocked: false },
-      ...profileLocationWhere(scopeAncestors),
-    },
-    include: {
-      user: true,
-      city: true,
-      skills: true,
-      knowledgeAreas: true,
-      experiences: { select: { venueId: true } },
-    },
-  })
+  // The viewer's own connections come straight out of statusByUserId (no
+  // extra query needed); only the candidates' connections require a fetch,
+  // and it's scoped to just this page of candidates rather than every
+  // accepted connection on the platform.
+  const myConnections = new Set(
+    [...statusByUserId.entries()].filter(([, v]) => v.status === 'connected').map(([id]) => id),
+  )
+  const candidateAdjacency = await buildConnectionsAdjacencyFor(profiles.map((p) => p.userId))
 
   const people = profiles
     .map((p) => {
@@ -65,7 +76,7 @@ async function getCommonGroundPeople(userId, scopeAncestors = null) {
       const sharedKnowledgeAreas = p.knowledgeAreas.filter((k) => myKnowledgeAreaIds.has(k.id)).length
       const theirVenueIds = new Set(p.experiences.map((e) => e.venueId))
       const sharedVenues = [...theirVenueIds].filter((id) => myVenueIds.has(id)).length
-      const theirConnections = adjacency.get(p.userId) || new Set()
+      const theirConnections = candidateAdjacency.get(p.userId) || new Set()
       const mutualConnections = [...myConnections].filter((id) => theirConnections.has(id)).length
 
       return {

@@ -2,7 +2,7 @@ const express = require('express')
 const prisma = require('../lib/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { canEditEventOwner, getEventOwnerManagers, ownerExists } = require('../lib/events')
-const { buildConnectionsAdjacency, getMutualConnectionsAtVenues } = require('../lib/connectionStatus')
+const { getAcceptedConnectionUserIds, getMutualConnectionsAtVenues } = require('../lib/connectionStatus')
 const { createNotification } = require('../lib/notifications')
 const { resolveScopeForRequest, resolveScopeAncestors, venueLocationWhere } = require('../lib/location')
 
@@ -190,17 +190,16 @@ router.get('/events/recommended', async (req, res) => {
     orderBy: { startAt: 'asc' },
   })
 
-  const [profile, venueFollows, businessFollows, adjacency] = await Promise.all([
+  const [profile, venueFollows, businessFollows, myConnections] = await Promise.all([
     prisma.profile.findUnique({ where: { userId: req.userId }, include: { skills: true, knowledgeAreas: true } }),
     prisma.venueFollow.findMany({ where: { userId: req.userId } }),
     prisma.businessFollow.findMany({ where: { userId: req.userId } }),
-    buildConnectionsAdjacency(),
+    getAcceptedConnectionUserIds(req.userId),
   ])
   const mySkillIds = new Set((profile?.skills || []).map((s) => s.id))
   const myKnowledgeAreaIds = new Set((profile?.knowledgeAreas || []).map((k) => k.id))
   const followedVenueIds = new Set(venueFollows.map((f) => f.venueId))
   const followedBusinessIds = new Set(businessFollows.map((f) => f.businessId))
-  const myConnections = adjacency.get(req.userId) || new Set()
 
   const venueOwnedIds = [...new Set(events.filter((e) => e.ownerType === 'VENUE').map((e) => e.ownerId))]
   const mutualConnectionsMap = await getMutualConnectionsAtVenues(venueOwnedIds, myConnections)

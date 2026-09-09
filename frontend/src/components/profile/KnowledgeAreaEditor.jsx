@@ -3,13 +3,13 @@ import * as api from '../../lib/api'
 import SearchCombobox from '../SearchCombobox'
 import Tag from '../Tag'
 import TagLevelInfo from '../TagLevelInfo'
-import { levelLabel } from '../../lib/levelLabel'
+import { levelLabel, sortByLevel } from '../../lib/levelLabel'
 
 function KnowledgeAreaEditor({ profile, onAdd, onRemove }) {
   const [error, setError] = useState('')
   const [removing, setRemoving] = useState('')
 
-  const knowledgeAreas = profile?.knowledgeAreas || []
+  const knowledgeAreas = sortByLevel(profile?.knowledgeAreas || [])
   const selectedNames = knowledgeAreas.map((k) => k.name)
 
   async function handleSelect(item) {

@@ -3,13 +3,13 @@ import * as api from '../../lib/api'
 import SearchCombobox from '../SearchCombobox'
 import Tag from '../Tag'
 import TagLevelInfo from '../TagLevelInfo'
-import { levelLabel } from '../../lib/levelLabel'
+import { levelLabel, sortByLevel } from '../../lib/levelLabel'
 
 function SkillsEditor({ profile, onAdd, onRemove }) {
   const [error, setError] = useState('')
   const [removing, setRemoving] = useState('')
 
-  const skills = profile?.skills || []
+  const skills = sortByLevel(profile?.skills || [])
   const selectedNames = skills.map((s) => s.name)
 
   async function handleSelect(item) {

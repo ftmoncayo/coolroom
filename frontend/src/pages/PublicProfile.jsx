@@ -15,6 +15,7 @@ import Section from '../components/Section'
 import ProfileHeader from '../components/profile/ProfileHeader'
 import VenueTypeIcon from '../components/venue/VenueTypeIcon'
 import { locationCountryName, rightToWorkLabel } from '../lib/location'
+import { sortByLevel } from '../lib/levelLabel'
 
 function formatDate(value) {
   if (!value) return ''
@@ -193,7 +194,7 @@ function PublicProfile() {
 
         <Section title="Skills" action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
-            {profile.skills.map((skill) => (
+            {sortByLevel(profile.skills).map((skill) => (
               <Tag key={skill.id} level={skill.level}>
                 {skill.name}
               </Tag>
@@ -204,7 +205,7 @@ function PublicProfile() {
 
         <Section title="Knowledge Bank" action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
-            {profile.knowledgeAreas.map((area) => (
+            {sortByLevel(profile.knowledgeAreas).map((area) => (
               <Tag key={area.id} level={area.level}>
                 {area.name}
               </Tag>

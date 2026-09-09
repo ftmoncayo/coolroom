@@ -10,10 +10,10 @@ function Tag({ children, onRemove, removeLabel, removeDisabled = false, level })
 
   return (
     <span className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-sm ${style.wrapper}`}>
+      {children}
       {level === 'UPSKILLING' && <span aria-hidden="true">↑</span>}
       {level === 2 && <span aria-hidden="true">✓</span>}
       {level === 3 && <span aria-hidden="true">⭐</span>}
-      {children}
       {onRemove && (
         <button
           type="button"

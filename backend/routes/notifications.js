@@ -2,7 +2,12 @@ const express = require('express')
 const prisma = require('../lib/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { displayName } = require('../lib/displayName')
-const { isEligibleManagerFor, isEligiblePeerFor, clearPendingEndorsementRequests } = require('../lib/endorsements')
+const {
+  isEligibleManagerFor,
+  isEligiblePeerFor,
+  clearPendingEndorsementRequests,
+  computeLevel,
+} = require('../lib/endorsements')
 const { createNotification } = require('../lib/notifications')
 
 const router = express.Router()
@@ -10,10 +15,17 @@ router.use(requireAuth)
 
 const NOTIFICATION_LIMIT = 50
 
-// Batches Skill/KnowledgeArea name lookups for every ENDORSEMENT_REQUEST
-// notification in one page, rather than resolving each one individually.
+// ENDORSEMENT_REQUEST (targetId = Skill/KnowledgeArea id, asking someone to
+// endorse) and ENDORSEMENT_RECEIVED (same target shape, confirming to the
+// profile owner that an endorsement landed) share an itemName lookup - both
+// just need the Skill/KnowledgeArea's name for their target.
+const ENDORSEMENT_ITEM_TYPES = ['ENDORSEMENT_REQUEST', 'ENDORSEMENT_RECEIVED']
+
+// Batches Skill/KnowledgeArea name lookups for every ENDORSEMENT_REQUEST/
+// ENDORSEMENT_RECEIVED notification in one page, rather than resolving each
+// one individually.
 async function getEndorsementItemNames(notifications) {
-  const requests = notifications.filter((n) => n.type === 'ENDORSEMENT_REQUEST')
+  const requests = notifications.filter((n) => ENDORSEMENT_ITEM_TYPES.includes(n.type))
   const skillIds = [...new Set(requests.filter((n) => n.targetType === 'SKILL').map((n) => n.targetId))]
   const knowledgeAreaIds = [
     ...new Set(requests.filter((n) => n.targetType === 'KNOWLEDGE_AREA').map((n) => n.targetId)),
@@ -30,9 +42,54 @@ async function getEndorsementItemNames(notifications) {
   return map
 }
 
+// Batches the "resulting tier" (2/PEER or 3/MANAGER — Level 1 and Upskilling
+// never trigger an ENDORSEMENT_RECEIVED notification, so those are the only
+// two computeLevel can return here) for every ENDORSEMENT_RECEIVED
+// notification in one page. Computed fresh from the current Endorsement
+// rows rather than stored at creation time, same "derived, not stored"
+// approach as everywhere else level is shown - so this always reflects the
+// item's current tier, matching the "now X-endorsed" wording.
+async function getEndorsementReceivedLevels(notifications) {
+  const received = notifications.filter((n) => n.type === 'ENDORSEMENT_RECEIVED')
+  if (received.length === 0) return new Map()
+
+  const recipientUserIds = [...new Set(received.map((n) => n.userId))]
+  const profiles = await prisma.profile.findMany({
+    where: { userId: { in: recipientUserIds } },
+    select: { id: true, userId: true },
+  })
+  const profileIdByUserId = new Map(profiles.map((p) => [p.userId, p.id]))
+
+  const pairs = received
+    .map((n) => ({ notifId: n.id, profileId: profileIdByUserId.get(n.userId), itemType: n.targetType, itemId: n.targetId }))
+    .filter((p) => p.profileId)
+  if (pairs.length === 0) return new Map()
+
+  const endorsements = await prisma.endorsement.findMany({
+    where: { OR: pairs.map((p) => ({ profileId: p.profileId, itemType: p.itemType, itemId: p.itemId })) },
+  })
+  const rowsByKey = new Map()
+  for (const e of endorsements) {
+    const key = `${e.profileId}:${e.itemType}:${e.itemId}`
+    if (!rowsByKey.has(key)) rowsByKey.set(key, [])
+    rowsByKey.get(key).push(e)
+  }
+
+  const map = new Map()
+  for (const p of pairs) {
+    const rows = rowsByKey.get(`${p.profileId}:${p.itemType}:${p.itemId}`) || []
+    // hasUpskilling is irrelevant here - an ENDORSEMENT_RECEIVED notification
+    // only ever exists alongside at least one real Endorsement row, so
+    // computeLevel always resolves via the MANAGER/PEER checks before it
+    // would ever fall through to the Upskilling branch.
+    map.set(p.notifId, computeLevel(rows, false))
+  }
+  return map
+}
+
 const MANAGER_NOMINATION_TYPES = ['MANAGER_NOMINATION_APPROVED', 'MANAGER_NOMINATION_DECLINED']
 
-function formatNotification(n, itemNameById, eventInfoById, nominationTargetNameById) {
+function formatNotification(n, itemNameById, eventInfoById, nominationTargetNameById, resultingLevelById) {
   return {
     id: n.id,
     type: n.type,
@@ -41,8 +98,10 @@ function formatNotification(n, itemNameById, eventInfoById, nominationTargetName
     read: n.read,
     createdAt: n.createdAt,
     sourceUser: n.sourceUser ? { id: n.sourceUser.id, name: displayName(n.sourceUser) } : null,
-    itemName:
-      n.type === 'ENDORSEMENT_REQUEST' ? itemNameById.get(`${n.targetType}:${n.targetId}`) || null : undefined,
+    itemName: ENDORSEMENT_ITEM_TYPES.includes(n.type)
+      ? itemNameById.get(`${n.targetType}:${n.targetId}`) || null
+      : undefined,
+    resultingLevel: n.type === 'ENDORSEMENT_RECEIVED' ? resultingLevelById.get(n.id) ?? null : undefined,
     eventTitle:
       n.type === 'EVENT_INTEREST' || n.type === 'ATTENDANCE_CONFIRM'
         ? eventInfoById.get(n.id)?.eventTitle || null
@@ -180,9 +239,10 @@ router.get('/notifications', async (req, res) => {
   const itemNameById = await getEndorsementItemNames(visible)
   const eventInfoById = await getEventNotificationInfo(visible)
   const nominationTargetNameById = await getManagerNominationTargetNames(visible)
+  const resultingLevelById = await getEndorsementReceivedLevels(visible)
   res.json({
     notifications: visible.map((n) =>
-      formatNotification(n, itemNameById, eventInfoById, nominationTargetNameById),
+      formatNotification(n, itemNameById, eventInfoById, nominationTargetNameById, resultingLevelById),
     ),
   })
 })
@@ -294,6 +354,17 @@ router.put('/notifications/:id/endorse', async (req, res) => {
   }
   const endorserRole = isManager ? 'MANAGER' : 'PEER'
 
+  const existingEndorsement = await prisma.endorsement.findUnique({
+    where: {
+      profileId_itemType_itemId_endorserUserId: {
+        profileId: workerProfile.id,
+        itemType,
+        itemId,
+        endorserUserId: req.userId,
+      },
+    },
+  })
+
   await prisma.endorsement.upsert({
     where: {
       profileId_itemType_itemId_endorserUserId: {
@@ -311,6 +382,22 @@ router.put('/notifications/:id/endorse', async (req, res) => {
     await clearPendingEndorsementRequests({ workerUserId, itemType, itemId })
   } else {
     await prisma.notification.update({ where: { id: notification.id }, data: { dismissed: true } })
+  }
+
+  // Only notify on a genuinely new or upgraded endorsement (e.g. re-endorsing
+  // at the same role - a stale notification acted on twice, a double-click -
+  // shouldn't re-announce something that already happened) - informational
+  // only, unlike ENDORSEMENT_REQUEST, so the profile owner just gets told it
+  // happened once, nothing to action, a normal dismissible notification (see
+  // PUT /notifications/:id/dismiss, which has no special case for this type).
+  if (!existingEndorsement || existingEndorsement.endorserRole !== endorserRole) {
+    await createNotification({
+      userId: workerUserId,
+      type: 'ENDORSEMENT_RECEIVED',
+      sourceUserId: req.userId,
+      targetType: itemType,
+      targetId: itemId,
+    })
   }
 
   res.json({ ok: true, endorserRole })

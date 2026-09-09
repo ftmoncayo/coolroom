@@ -23,6 +23,11 @@ function notificationText(n) {
       const label = n.targetType === 'SKILL' ? 'skill' : 'knowledge area'
       return `${name} asked you to endorse their ${label} "${n.itemName || ''}"`
     }
+    case 'ENDORSEMENT_RECEIVED': {
+      const label = n.targetType === 'SKILL' ? 'skill' : 'knowledge area'
+      const tier = n.resultingLevel === 3 ? 'manager-endorsed' : 'peer-endorsed'
+      return `${name} endorsed your ${n.itemName || ''} ${label} (now ${tier})`
+    }
     case 'EVENT_INTEREST':
       return `${name} is interested in "${n.eventTitle || ''}"${n.eventInterestNote ? `: ${n.eventInterestNote}` : ''}`
     case 'ATTENDANCE_CONFIRM':
@@ -43,6 +48,7 @@ function notificationLink(n) {
   if (n.type === 'CONNECTION_REQUEST') return '/connections/requests'
   if (n.type === 'CONNECTION_ACCEPTED') return n.sourceUser ? `/profile/${n.sourceUser.id}` : '/connections'
   if (n.type === 'ENDORSEMENT_REQUEST') return n.sourceUser ? `/profile/${n.sourceUser.id}` : '/discover'
+  if (n.type === 'ENDORSEMENT_RECEIVED') return n.targetType === 'SKILL' ? '/profile#skills' : '/profile#knowledge-bank'
   if (n.type === 'EVENT_INTEREST' || n.type === 'ATTENDANCE_CONFIRM') return `/events/${n.targetId}`
   if (n.type === 'MANAGER_NOMINATION_APPROVED' || n.type === 'MANAGER_NOMINATION_DECLINED') {
     return n.targetType === 'VENUE' ? `/venues/${n.targetId}` : `/businesses/${n.targetId}`

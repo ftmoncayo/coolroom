@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useProfile } from '../context/ProfileContext'
@@ -18,6 +19,7 @@ import Section from '../components/Section'
 import { locationCountryName, rightToWorkLabel } from '../lib/location'
 
 function Profile() {
+  const location = useLocation()
   const { user } = useAuth()
   const { refreshProfile: refreshSharedProfile } = useProfile()
   const [profile, setProfile] = useState(null)
@@ -61,6 +63,15 @@ function Profile() {
     if (!user) return
     api.fetchUserActivity(user.id).then(setActivity).catch(() => {})
   }, [user])
+
+  // Lets a notification link straight to "#skills" or "#knowledge-bank"
+  // (e.g. an endorsement confirmation) - a plain hash in the URL doesn't
+  // auto-scroll on its own once React Router has already rendered the page,
+  // so it needs a nudge once the section it points to actually exists.
+  useEffect(() => {
+    if (loading || !location.hash) return
+    document.getElementById(location.hash.slice(1))?.scrollIntoView({ block: 'start' })
+  }, [loading, location.hash])
 
   async function refresh() {
     const data = await api.fetchProfile()
@@ -230,11 +241,11 @@ function Profile() {
           />
         </Section>
 
-        <Section title="Skills">
+        <Section id="skills" title="Skills">
           <SkillsEditor profile={profile} onAdd={handleAddSkill} onRemove={handleRemoveSkill} />
         </Section>
 
-        <Section title="Knowledge Bank">
+        <Section id="knowledge-bank" title="Knowledge Bank">
           <KnowledgeAreaEditor
             profile={profile}
             onAdd={handleAddKnowledgeArea}

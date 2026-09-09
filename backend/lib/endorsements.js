@@ -193,6 +193,7 @@ async function clearPendingEndorsementRequests({ workerUserId, itemType, itemId 
 
 module.exports = {
   PEER_NOTIFY_LIMIT,
+  computeLevel,
   attachEndorsementLevels,
   getWorkerVenueIds,
   getEligiblePeerUserIds,

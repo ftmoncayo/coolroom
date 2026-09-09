@@ -2,6 +2,7 @@ const express = require('express')
 const prisma = require('../lib/prisma')
 const { requireAuth } = require('../middleware/auth')
 const { displayName } = require('../lib/displayName')
+const { createNotification } = require('../lib/notifications')
 
 const router = express.Router()
 router.use(requireAuth)
@@ -124,6 +125,25 @@ router.get('/conversations', async (req, res) => {
   res.json({ conversations: result })
 })
 
+// Independent of the MESSAGE notification (which is deduplicated per
+// sender/conversation, so a burst of messages only ever produces one) - this
+// counts every actual unread Message row, matching the per-conversation
+// unreadCount above but totalled across all of the caller's conversations.
+router.get('/conversations/unread-count', async (req, res) => {
+  const conversations = await prisma.conversation.findMany({
+    where: { OR: [{ userAId: req.userId }, { userBId: req.userId }] },
+    select: { id: true },
+  })
+  const count = await prisma.message.count({
+    where: {
+      conversationId: { in: conversations.map((c) => c.id) },
+      senderUserId: { not: req.userId },
+      readAt: null,
+    },
+  })
+  res.json({ count })
+})
+
 router.get('/conversations/:id/messages', async (req, res) => {
   const conversation = await findConversationForParticipant(req.params.id, req.userId)
   if (!conversation) {
@@ -144,10 +164,26 @@ router.get('/conversations/:id/messages', async (req, res) => {
   // Viewing the thread is what marks the other participant's messages read -
   // simple, and matches every unread indicator elsewhere in the app being
   // cleared by opening the thing it points at rather than a separate action.
-  await prisma.message.updateMany({
-    where: { conversationId: conversation.id, senderUserId: { not: req.userId }, readAt: null },
-    data: { readAt: new Date() },
-  })
+  // The same open also resolves any MESSAGE notification for this
+  // conversation, the same way a pending CONNECTION_REQUEST notification
+  // resolves the moment its underlying request is acted on rather than
+  // requiring a separate dismiss.
+  await Promise.all([
+    prisma.message.updateMany({
+      where: { conversationId: conversation.id, senderUserId: { not: req.userId }, readAt: null },
+      data: { readAt: new Date() },
+    }),
+    prisma.notification.updateMany({
+      where: {
+        userId: req.userId,
+        type: 'MESSAGE',
+        targetType: 'CONVERSATION',
+        targetId: conversation.id,
+        dismissed: false,
+      },
+      data: { dismissed: true },
+    }),
+  ])
 
   res.json({
     conversation: { id: conversation.id, participant: formatParticipant(participantRow) },
@@ -183,6 +219,32 @@ router.post('/conversations/:id/messages', async (req, res) => {
   const message = await prisma.message.create({
     data: { conversationId: conversation.id, senderUserId: req.userId, content: content.trim() },
   })
+
+  // Deduplicated per conversation/sender: a burst of messages before the
+  // recipient opens the thread should read as one notification, not one per
+  // message. dismissed:false is safe to key off here specifically because
+  // opening the conversation (see GET .../messages above) is the only thing
+  // that ever sets dismissed:true for a MESSAGE notification - so a leftover
+  // undismissed row always means "still genuinely unread", never stale.
+  const alreadyNotified = await prisma.notification.findFirst({
+    where: {
+      userId: otherUserId,
+      type: 'MESSAGE',
+      targetType: 'CONVERSATION',
+      targetId: conversation.id,
+      sourceUserId: req.userId,
+      dismissed: false,
+    },
+  })
+  if (!alreadyNotified) {
+    await createNotification({
+      userId: otherUserId,
+      type: 'MESSAGE',
+      sourceUserId: req.userId,
+      targetType: 'CONVERSATION',
+      targetId: conversation.id,
+    })
+  }
 
   res.status(201).json({
     message: {

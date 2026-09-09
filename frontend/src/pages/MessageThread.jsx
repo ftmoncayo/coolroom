@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
+import { useMessages } from '../context/MessagesContext'
+import { useNotifications } from '../context/NotificationsContext'
 import ReportButton from '../components/ReportButton'
 
 const POLL_INTERVAL_MS = 4000
@@ -13,6 +15,8 @@ function formatTime(value) {
 function MessageThread() {
   const { id } = useParams()
   const { user } = useAuth()
+  const { refreshUnreadMessageCount } = useMessages()
+  const { refreshUnreadCount } = useNotifications()
   const [participant, setParticipant] = useState(null)
   const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
@@ -30,6 +34,11 @@ function MessageThread() {
           if (cancelled) return
           setParticipant(data.conversation.participant)
           setMessages(data.messages)
+          // Fetching the thread is also what marks its messages read and
+          // resolves the MESSAGE notification for it (see GET
+          // .../messages), so both nav badges need to catch up too.
+          refreshUnreadMessageCount()
+          refreshUnreadCount()
         })
         .catch((err) => !cancelled && setError(err.message))
         .finally(() => !cancelled && setLoading(false))
@@ -76,7 +85,7 @@ function MessageThread() {
 
         {error && <p className="text-sm text-danger">{error}</p>}
 
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto rounded-lg border border-border bg-surface p-4">
+        <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto rounded-lg border border-border bg-surface p-4">
           {messages.length === 0 && (
             <p className="text-sm text-text-faint">No messages yet — say hello.</p>
           )}

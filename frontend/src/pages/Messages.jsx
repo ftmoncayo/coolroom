@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as api from '../lib/api'
+import { useMessages } from '../context/MessagesContext'
 
 const POLL_INTERVAL_MS = 8000
 
@@ -13,12 +14,16 @@ function Messages() {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { refreshUnreadMessageCount } = useMessages()
 
   useEffect(() => {
     function refresh() {
       api
         .fetchConversations()
-        .then(setConversations)
+        .then((data) => {
+          setConversations(data)
+          refreshUnreadMessageCount()
+        })
         .catch((err) => setError(err.message))
         .finally(() => setLoading(false))
     }

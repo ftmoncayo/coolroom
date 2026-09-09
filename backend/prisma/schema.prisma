@@ -583,6 +583,7 @@ enum NotificationType {
   ATTENDANCE_CONFIRM
   MANAGER_NOMINATION_APPROVED
   MANAGER_NOMINATION_DECLINED
+  MESSAGE
 }
 
 // Reuses EngagementTargetType's POST/ACTIVITY values plus CONNECTION_REQUEST,
@@ -605,6 +606,10 @@ enum NotificationTargetType {
   EVENT
   VENUE
   BUSINESS
+  // MESSAGE notifications: targetId is the Conversation.id (not the
+  // Message.id) - see routes/conversations.js, which both creates and
+  // resolves these by conversation, not by individual message.
+  CONVERSATION
 }
 
 enum EndorsementItemType {

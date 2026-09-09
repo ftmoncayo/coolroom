@@ -31,12 +31,15 @@ function notificationText(n) {
       return `Your request to manage ${n.targetName || 'this venue/business'} was approved`
     case 'MANAGER_NOMINATION_DECLINED':
       return `Your request to manage ${n.targetName || 'this venue/business'} was declined`
+    case 'MESSAGE':
+      return `${name} sent you a message`
     default:
       return 'New notification'
   }
 }
 
 function notificationLink(n) {
+  if (n.type === 'MESSAGE') return `/messages/${n.targetId}`
   if (n.type === 'CONNECTION_REQUEST') return '/connections/requests'
   if (n.type === 'CONNECTION_ACCEPTED') return n.sourceUser ? `/profile/${n.sourceUser.id}` : '/connections'
   if (n.type === 'ENDORSEMENT_REQUEST') return n.sourceUser ? `/profile/${n.sourceUser.id}` : '/discover'

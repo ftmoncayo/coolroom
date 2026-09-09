@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { NotificationsProvider } from './context/NotificationsContext.jsx'
+import { MessagesProvider } from './context/MessagesContext.jsx'
 import { ProfileProvider } from './context/ProfileContext.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <ProfileProvider>
           <NotificationsProvider>
-            <App />
+            <MessagesProvider>
+              <App />
+            </MessagesProvider>
           </NotificationsProvider>
         </ProfileProvider>
       </AuthProvider>

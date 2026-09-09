@@ -992,6 +992,11 @@ export async function fetchConversations() {
   return data.conversations
 }
 
+export async function fetchUnreadMessageCount() {
+  const data = await authRequest('/api/conversations/unread-count')
+  return data.count
+}
+
 export async function fetchMessages(conversationId) {
   return authRequest(`/api/conversations/${conversationId}/messages`)
 }

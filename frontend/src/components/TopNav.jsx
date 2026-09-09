@@ -2,10 +2,11 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useProfile } from '../context/ProfileContext'
+import { useMessages } from '../context/MessagesContext'
 import * as api from '../lib/api'
 import NotificationsLink from './NotificationsLink'
 
-function buildPrimaryLinks() {
+function buildPrimaryLinks(unreadMessageCount) {
   return [
     { to: '/home', label: 'Home' },
     { to: '/profile', label: 'Profile' },
@@ -14,7 +15,7 @@ function buildPrimaryLinks() {
     { to: '/businesses', label: 'Businesses' },
     { to: '/jobs', label: 'Jobs' },
     { to: '/events', label: 'Events' },
-    { to: '/messages', label: 'Messages' },
+    { to: '/messages', label: unreadMessageCount > 0 ? `Messages (${unreadMessageCount})` : 'Messages' },
     { to: '/feedback', label: 'Feedback' },
   ]
 }
@@ -53,6 +54,7 @@ function buildAdminLinks(user, unverifiedVenueCount, unverifiedBusinessCount) {
 function TopNav() {
   const { user, logout } = useAuth()
   const { profile } = useProfile()
+  const { unreadMessageCount } = useMessages()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [unverifiedVenueCount, setUnverifiedVenueCount] = useState(null)
@@ -96,7 +98,7 @@ function TopNav() {
 
   const name = profile ? [profile.firstName, profile.lastName].filter(Boolean).join(' ') : ''
   const displayName = name || user.email
-  const primaryLinks = buildPrimaryLinks()
+  const primaryLinks = buildPrimaryLinks(unreadMessageCount)
   const mineLinks = buildMineLinks(user)
   const adminLinks = buildAdminLinks(user, unverifiedVenueCount, unverifiedBusinessCount)
 

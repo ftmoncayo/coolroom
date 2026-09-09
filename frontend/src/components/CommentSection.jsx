@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import ReportButton from './ReportButton'
 
 function formatDate(value) {
   if (!value) return ''
@@ -35,6 +36,7 @@ function CommentSection({ loading, comments, canEngage, content, setContent, sub
                     Delete
                   </button>
                 )}
+                {comment.author.id !== user?.id && <ReportButton targetType="COMMENT" targetId={comment.id} />}
               </div>
             </div>
           ))}

@@ -87,7 +87,14 @@ router.post('/signup', async (req, res) => {
   const managerFlags = await computeManagerFlags(user.id)
   res.status(201).json({
     token,
-    user: { id: user.id, email: user.email, isAdmin: user.isAdmin, isVenueAdmin: user.isVenueAdmin, ...managerFlags },
+    user: {
+      id: user.id,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isVenueAdmin: user.isVenueAdmin,
+      isModerator: user.isModerator,
+      ...managerFlags,
+    },
     inviteVenue,
   })
 })
@@ -120,7 +127,14 @@ router.post('/login', async (req, res) => {
   const managerFlags = await computeManagerFlags(user.id)
   res.json({
     token,
-    user: { id: user.id, email: user.email, isAdmin: user.isAdmin, isVenueAdmin: user.isVenueAdmin, ...managerFlags },
+    user: {
+      id: user.id,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      isVenueAdmin: user.isVenueAdmin,
+      isModerator: user.isModerator,
+      ...managerFlags,
+    },
   })
 })
 
@@ -135,6 +149,7 @@ router.get('/me', requireAuth, async (req, res) => {
     email: user.email,
     isAdmin: user.isAdmin,
     isVenueAdmin: user.isVenueAdmin,
+    isModerator: user.isModerator,
     createdAt: user.createdAt,
     ...managerFlags,
   })

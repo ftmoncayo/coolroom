@@ -34,4 +34,16 @@ async function requireAdminOrVenueAdmin(req, res, next) {
   next()
 }
 
-module.exports = { requireAuth, requireAdmin, requireAdminOrVenueAdmin }
+// Moderators get a narrow slice of admin power (the Reports queue, resolving
+// reports, deleting flagged content, and - via this same check reused on the
+// existing block/unblock routes - blocking/unblocking a user) but nothing
+// else; every other admin-only route stays on requireAdmin alone.
+async function requireAdminOrModerator(req, res, next) {
+  const user = await prisma.user.findUnique({ where: { id: req.userId } })
+  if (!user || (!user.isAdmin && !user.isModerator)) {
+    return res.status(403).json({ error: 'Admin or moderator access required' })
+  }
+  next()
+}
+
+module.exports = { requireAuth, requireAdmin, requireAdminOrVenueAdmin, requireAdminOrModerator }

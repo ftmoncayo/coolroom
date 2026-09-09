@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import useEngagement from '../hooks/useEngagement'
 import CommentSection from './CommentSection'
+import ReportButton from './ReportButton'
+import { useAuth } from '../context/AuthContext'
 
 function personName(profile) {
   if (!profile) return null
@@ -13,6 +15,7 @@ function formatDate(value) {
 }
 
 function PostItem({ post, canDelete, onDelete }) {
+  const { user } = useAuth()
   const { comments, canEngage, loading, error, content, setContent, submitting, handleSubmit, handleDelete } =
     useEngagement('POST', post.id)
 
@@ -41,6 +44,7 @@ function PostItem({ post, canDelete, onDelete }) {
               Delete
             </button>
           )}
+          {post.author.id !== user?.id && <ReportButton targetType="POST" targetId={post.id} />}
         </div>
       </div>
 

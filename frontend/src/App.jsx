@@ -21,6 +21,7 @@ import AdminJobs from './pages/AdminJobs'
 import AdminLookups from './pages/AdminLookups'
 import AdminRegistration from './pages/AdminRegistration'
 import AdminFeedback from './pages/AdminFeedback'
+import AdminReports from './pages/AdminReports'
 import DiscoverPeople from './pages/DiscoverPeople'
 import InviteSomeone from './pages/InviteSomeone'
 import ConnectionRequests from './pages/ConnectionRequests'
@@ -336,6 +337,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminFeedback />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <AdminRoute allowModerator>
+              <AdminReports />
             </AdminRoute>
           }
         />

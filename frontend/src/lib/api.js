@@ -1003,3 +1003,26 @@ export async function sendMessage(conversationId, content) {
   })
   return data.message
 }
+
+export async function submitReport(targetType, targetId, reasonCategory, detail) {
+  const data = await authRequest('/api/reports', {
+    method: 'POST',
+    body: JSON.stringify({ targetType, targetId, reasonCategory, detail: detail || undefined }),
+  })
+  return data.report
+}
+
+export async function fetchAdminReports() {
+  const data = await authRequest('/api/admin/reports')
+  return data.reports
+}
+
+export async function resolveReport(id) {
+  const data = await authRequest(`/api/admin/reports/${id}/resolve`, { method: 'PUT' })
+  return data.report
+}
+
+export async function deleteReportedContent(id) {
+  const data = await authRequest(`/api/admin/reports/${id}/content`, { method: 'DELETE' })
+  return data.report
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
+import ReportButton from '../components/ReportButton'
 
 const POLL_INTERVAL_MS = 4000
 
@@ -90,7 +91,10 @@ function MessageThread() {
                 >
                   {m.content}
                 </div>
-                <span className="mt-1 text-xs text-text-faint">{formatTime(m.createdAt)}</span>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="text-xs text-text-faint">{formatTime(m.createdAt)}</span>
+                  {!mine && <ReportButton targetType="MESSAGE" targetId={m.id} />}
+                </div>
               </div>
             )
           })}

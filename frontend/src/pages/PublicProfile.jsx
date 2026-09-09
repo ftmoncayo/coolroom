@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useNotifications } from '../context/NotificationsContext'
+import ReportButton from '../components/ReportButton'
 import AboutSection from '../components/AboutSection'
 import ConnectionButton from '../components/ConnectionButton'
 import Tag from '../components/Tag'
@@ -114,9 +115,12 @@ function PublicProfile() {
               common, {data.sharedVenuesCount} venue{data.sharedVenuesCount === 1 ? '' : 's'} in common
             </p>
           </div>
-          <Link to="/discover" className="text-sm text-accent hover:text-accent-hover hover:underline">
-            Back to discover
-          </Link>
+          <div className="flex items-center gap-3">
+            <ReportButton targetType="PROFILE" targetId={userId} />
+            <Link to="/discover" className="text-sm text-accent hover:text-accent-hover hover:underline">
+              Back to discover
+            </Link>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

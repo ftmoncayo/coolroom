@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-function AdminRoute({ children, allowVenueAdmin = false }) {
+function AdminRoute({ children, allowVenueAdmin = false, allowModerator = false }) {
   const { user, loading } = useAuth()
 
   if (loading) {
@@ -12,7 +12,11 @@ function AdminRoute({ children, allowVenueAdmin = false }) {
     return <Navigate to="/login" replace />
   }
 
-  if (!user.isAdmin && !(allowVenueAdmin && user.isVenueAdmin)) {
+  if (
+    !user.isAdmin &&
+    !(allowVenueAdmin && user.isVenueAdmin) &&
+    !(allowModerator && user.isModerator)
+  ) {
     return <Navigate to="/home" replace />
   }
 

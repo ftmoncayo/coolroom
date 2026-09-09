@@ -72,6 +72,7 @@ function AdminUsers() {
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Admin</th>
                 <th className="px-4 py-3 font-medium">Venue admin</th>
+                <th className="px-4 py-3 font-medium">Moderator</th>
                 <th className="px-4 py-3 font-medium">Manages venues</th>
                 <th className="px-4 py-3 font-medium">Manages businesses</th>
                 <th className="px-4 py-3 font-medium">Status</th>
@@ -100,6 +101,16 @@ function AdminUsers() {
                       onChange={(e) => handleToggle(user.id, 'isVenueAdmin', e.target.checked)}
                       className="h-4 w-4 accent-accent disabled:opacity-50"
                       aria-label={`Toggle venue admin for ${user.email}`}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={user.isModerator}
+                      disabled={updatingId === user.id}
+                      onChange={(e) => handleToggle(user.id, 'isModerator', e.target.checked)}
+                      className="h-4 w-4 accent-accent disabled:opacity-50"
+                      aria-label={`Toggle moderator for ${user.email}`}
                     />
                   </td>
                   <td className="px-4 py-3 text-text-muted">
@@ -153,7 +164,7 @@ function AdminUsers() {
               ))}
               {!loading && users.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-text-faint">
+                  <td colSpan={8} className="px-4 py-6 text-center text-text-faint">
                     No users found.
                   </td>
                 </tr>

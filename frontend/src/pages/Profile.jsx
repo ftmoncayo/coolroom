@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useProfile } from '../context/ProfileContext'
+import ProfileHeader from '../components/profile/ProfileHeader'
 import ProfileDetails from '../components/profile/ProfileDetails'
 import SkillsEditor from '../components/profile/SkillsEditor'
 import KnowledgeAreaEditor from '../components/profile/KnowledgeAreaEditor'
@@ -14,6 +15,8 @@ import ConnectionsList from '../components/profile/ConnectionsList'
 import AboutSection from '../components/AboutSection'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
+import Section from '../components/Section'
+import { locationCountryName, rightToWorkLabel } from '../lib/location'
 
 function Profile() {
   const { user } = useAuth()
@@ -22,6 +25,7 @@ function Profile() {
   const [activity, setActivity] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [editingDetails, setEditingDetails] = useState(false)
   const [inviteVenue, setInviteVenue] = useState(() => {
     try {
       const raw = localStorage.getItem('staffie_invite_venue')
@@ -46,7 +50,10 @@ function Profile() {
   useEffect(() => {
     api
       .fetchProfile()
-      .then((data) => setProfile(data.profile))
+      .then((data) => {
+        setProfile(data.profile)
+        if (!data.profile) setEditingDetails(true)
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [])
@@ -64,6 +71,7 @@ function Profile() {
   async function handleSaveDetails(data) {
     const result = await api.saveProfile(data)
     setProfile(result.profile)
+    setEditingDetails(false)
     // Name/location can change here - keep the shared context (nav display
     // name, every page's default location-scope filter) in sync rather than
     // showing stale data until the next full app load.
@@ -131,9 +139,8 @@ function Profile() {
 
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text">Your profile</h1>
+      <div className="mx-auto flex max-w-2xl flex-col gap-8">
+        <div className="flex items-center justify-end">
           <Link to="/home" className="text-sm text-accent hover:text-accent-hover hover:underline">
             Back to home
           </Link>
@@ -165,21 +172,51 @@ function Profile() {
           </div>
         )}
 
-        <ProfileDetails profile={profile} onSave={handleSaveDetails} />
+        {editingDetails ? (
+          <ProfileDetails
+            profile={profile}
+            onSave={handleSaveDetails}
+            onCancel={profile ? () => setEditingDetails(false) : undefined}
+          />
+        ) : (
+          <>
+            <ProfileHeader
+              profile={profile}
+              connectionsCount={profile?.connectionsCount}
+              isOwn
+              onEdit={() => setEditingDetails(true)}
+            />
 
-        <AboutSection
-          about={profile?.about}
-          canEdit={Boolean(profile)}
-          onSave={handleSaveAbout}
-          emptyMessage={
-            profile
-              ? 'Add an introduction to tell people about yourself.'
-              : 'Complete your ID Card above before adding an introduction.'
-          }
-        />
+            <Section title="ID Card">
+              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
+                  <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-text-faint">Cultural identity / background</dt>
+                  <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
+                </div>
+              </dl>
+            </Section>
+          </>
+        )}
 
-        <div className="flex flex-col gap-3">
-          <h2 className="text-xl font-semibold text-text">Recent activity</h2>
+        <Section title="About">
+          <AboutSection
+            about={profile?.about}
+            canEdit={Boolean(profile)}
+            onSave={handleSaveAbout}
+            emptyMessage={
+              profile
+                ? 'Add an introduction to tell people about yourself.'
+                : 'Complete your profile above before adding an introduction.'
+            }
+            plain
+          />
+        </Section>
+
+        <Section title="Recent Activity">
           <ShowMore
             items={activity}
             initialCount={2}
@@ -187,25 +224,45 @@ function Profile() {
             emptyMessage="No activity yet."
             renderItem={(item) => <ActivityItem key={item.id} activity={item} />}
           />
-        </div>
+        </Section>
 
-        <SkillsEditor profile={profile} onAdd={handleAddSkill} onRemove={handleRemoveSkill} />
+        <Section title="Experience">
+          <ExperienceEditor
+            profile={profile}
+            experiences={profile?.experiences || []}
+            onCreate={handleCreateExperience}
+            onUpdate={handleUpdateExperience}
+            onDelete={handleDeleteExperience}
+            prefillVenue={prefillVenue}
+          />
+        </Section>
 
-        <KnowledgeAreaEditor
-          profile={profile}
-          onAdd={handleAddKnowledgeArea}
-          onRemove={handleRemoveKnowledgeArea}
-        />
+        <Section title="Skills">
+          <SkillsEditor profile={profile} onAdd={handleAddSkill} onRemove={handleRemoveSkill} />
+        </Section>
+
+        <Section title="Knowledge Bank">
+          <KnowledgeAreaEditor
+            profile={profile}
+            onAdd={handleAddKnowledgeArea}
+            onRemove={handleRemoveKnowledgeArea}
+          />
+        </Section>
+
+        <Section title="Certifications">
+          <CertificationsEditor
+            profile={profile}
+            certifications={profile?.certifications || []}
+            onCreate={handleCreateCertification}
+            onUpdate={handleUpdateCertification}
+            onDelete={handleDeleteCertification}
+          />
+        </Section>
 
         {profile && (
-          <div className="rounded-lg border border-border bg-surface p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-semibold text-text">Endorsements</h2>
-                <p className="mt-1 text-sm text-text-faint">
-                  Ask colleagues or managers to endorse your skills and knowledge areas.
-                </p>
-              </div>
+          <Section
+            title="Endorsements"
+            action={
               <button
                 type="button"
                 onClick={() => setShowEndorsementPanel((prev) => !prev)}
@@ -213,33 +270,24 @@ function Profile() {
               >
                 {showEndorsementPanel ? 'Hide' : 'Request Endorsements'}
               </button>
-            </div>
+            }
+          >
+            <p className="text-sm text-text-faint">
+              Ask colleagues or managers to endorse your skills and knowledge areas.
+            </p>
             {showEndorsementPanel && (
               <RequestEndorsementsPanel profile={profile} onClose={() => setShowEndorsementPanel(false)} />
             )}
-          </div>
+          </Section>
         )}
 
-        <ExperienceEditor
-          profile={profile}
-          experiences={profile?.experiences || []}
-          onCreate={handleCreateExperience}
-          onUpdate={handleUpdateExperience}
-          onDelete={handleDeleteExperience}
-          prefillVenue={prefillVenue}
-        />
+        <Section title="Training">
+          <TrainingHistory />
+        </Section>
 
-        <TrainingHistory />
-
-        <CertificationsEditor
-          profile={profile}
-          certifications={profile?.certifications || []}
-          onCreate={handleCreateCertification}
-          onUpdate={handleUpdateCertification}
-          onDelete={handleDeleteCertification}
-        />
-
-        <ConnectionsList />
+        <Section title="Connections">
+          <ConnectionsList />
+        </Section>
       </div>
     </div>
   )

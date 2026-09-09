@@ -7,6 +7,7 @@ import VerificationBadge from '../components/venue/VerificationBadge'
 import VenueManagersPanel from '../components/venue/VenueManagersPanel'
 import PendingManagerRequests from '../components/venue/PendingManagerRequests'
 import VenueWorkers from '../components/venue/VenueWorkers'
+import VenueTypeIcon from '../components/venue/VenueTypeIcon'
 import Tag from '../components/Tag'
 import AboutSection from '../components/AboutSection'
 import NominateManagerButton from '../components/NominateManagerButton'
@@ -14,6 +15,65 @@ import PostNoticeBox from '../components/PostNoticeBox'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import PastEvents from '../components/event/PastEvents'
+import Section from '../components/Section'
+
+function formatDateTime(value) {
+  if (!value) return ''
+  return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function isTrainingCategory(event) {
+  return (event.category?.name || '').trim().toLowerCase() === 'training'
+}
+
+function VenueJobCard({ job, canManage, onApply, applying }) {
+  return (
+    <div className="rounded border border-border p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <Link to={`/jobs/${job.id}`} className="font-medium text-text hover:text-accent hover:underline">
+            {job.title}
+          </Link>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-text-faint">{job.description}</p>
+        </div>
+        {canManage ? (
+          <Link
+            to={`/jobs/${job.id}`}
+            className="shrink-0 text-sm text-accent hover:text-accent-hover hover:underline"
+          >
+            Manage
+          </Link>
+        ) : job.hasApplied ? (
+          <span className="shrink-0 rounded border border-accent px-3 py-1.5 text-sm font-medium text-accent">
+            Applied
+          </span>
+        ) : (
+          <button
+            type="button"
+            disabled={applying}
+            onClick={() => onApply(job.id)}
+            className="shrink-0 rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-text hover:bg-accent-hover disabled:opacity-50"
+          >
+            {applying ? 'Applying...' : 'Apply'}
+          </button>
+        )}
+      </div>
+      {(job.skills.length > 0 || job.knowledgeAreas.length > 0) && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {job.skills.map((s) => (
+            <Tag key={s.id}>{s.name}</Tag>
+          ))}
+          {job.knowledgeAreas.map((k) => (
+            <Tag key={k.id}>{k.name}</Tag>
+          ))}
+        </div>
+      )}
+      <p className="mt-3 text-sm text-text-faint">
+        {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
+      </p>
+    </div>
+  )
+}
 
 function VenueDetail() {
   const { id } = useParams()
@@ -21,9 +81,11 @@ function VenueDetail() {
   const [venue, setVenue] = useState(null)
   const [activity, setActivity] = useState([])
   const [jobs, setJobs] = useState([])
+  const [events, setEvents] = useState([])
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [applyingId, setApplyingId] = useState('')
 
   useEffect(() => {
     api
@@ -37,9 +99,17 @@ function VenueDetail() {
     return api.fetchVenueActivity(id).then(setActivity)
   }
 
+  function refreshJobs() {
+    return api.fetchJobs({ venueId: id, status: 'OPEN', scope: null }).then(setJobs)
+  }
+
   useEffect(() => {
     refreshActivity().catch(() => {})
-    api.fetchJobs({ venueId: id, scope: null }).then(setJobs).catch(() => {})
+    refreshJobs().catch(() => {})
+    api
+      .fetchEvents({ ownerType: 'VENUE', ownerId: id, when: 'upcoming', scope: null })
+      .then((all) => setEvents(all.filter((e) => !isTrainingCategory(e))))
+      .catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
@@ -64,9 +134,21 @@ function VenueDetail() {
     setVenue((prev) => ({ ...prev, isFollowing: result.isFollowing, isFavourite: result.isFavourite }))
   }
 
+  async function handleApply(jobId) {
+    setApplyingId(jobId)
+    try {
+      await api.applyToJob(jobId)
+      setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, hasApplied: true } : j)))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setApplyingId('')
+    }
+  }
+
   if (loading) return null
 
-  if (error) {
+  if (error && !venue) {
     return (
       <div className="min-h-screen bg-bg px-4 py-10">
         <div className="mx-auto max-w-2xl">
@@ -81,49 +163,29 @@ function VenueDetail() {
 
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-text">Venue</h1>
+      <div className="mx-auto flex max-w-2xl flex-col gap-8">
+        <div className="flex items-center justify-end">
           <Link to="/venues" className="text-sm text-accent hover:text-accent-hover hover:underline">
             Back to venues
           </Link>
         </div>
 
+        {error && <p className="text-sm text-danger">{error}</p>}
+
         {editing ? (
           <VenueForm initial={venue} isEditing onSubmit={handleSave} onCancel={() => setEditing(false)} />
         ) : (
-          <div className="rounded-lg border border-border bg-surface p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-text">{venue.name}</h2>
-                <div className="mt-1">
-                  <VerificationBadge status={venue.verificationStatus} />
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleToggleFollow}
-                  className={
-                    venue.isFollowing
-                      ? 'rounded border border-border-strong px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover'
-                      : 'rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-text hover:bg-accent-hover'
-                  }
-                >
-                  {venue.isFollowing ? 'Unfollow' : 'Follow'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleToggleFavourite}
-                  aria-label={venue.isFavourite ? 'Remove from favourites' : 'Add to favourites'}
-                  className={
-                    venue.isFavourite
-                      ? 'rounded border border-accent px-3 py-1.5 text-sm text-accent'
-                      : 'rounded border border-border-strong px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover'
-                  }
-                >
-                  {venue.isFavourite ? '★ Favourited' : '☆ Favourite'}
-                </button>
+          <div className="flex flex-wrap items-center gap-4">
+            <div
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border-strong bg-surface text-text-muted"
+              aria-hidden="true"
+            >
+              <VenueTypeIcon venueTypeName={venue.venueType?.name} className="h-7 w-7" />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-semibold text-text">{venue.name}</h1>
+                <VerificationBadge status={venue.verificationStatus} />
                 {venue.canEdit && (
                   <button
                     onClick={() => setEditing(true)}
@@ -133,40 +195,52 @@ function VenueDetail() {
                   </button>
                 )}
               </div>
+              <p className="text-sm text-text-muted">{venue.venueType?.name}</p>
+              <p className="text-sm text-text-faint">
+                {[venue.suburb?.name, venue.city?.name, venue.city?.state?.name, venue.city?.state?.country?.name]
+                  .filter(Boolean)
+                  .join(', ') || '—'}
+              </p>
+              {venue.specialties.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {venue.specialties.map((s) => (
+                    <Tag key={s.id}>{s.name}</Tag>
+                  ))}
+                </div>
+              )}
+              {venue.hasExperienceHere && (
+                <Link
+                  to={`/invite?venueId=${id}`}
+                  className="text-sm text-accent hover:text-accent-hover hover:underline"
+                >
+                  Invite a coworker
+                </Link>
+              )}
             </div>
-
-            {venue.hasExperienceHere && (
-              <Link
-                to={`/invite?venueId=${id}`}
-                className="mt-3 inline-block text-sm text-accent hover:text-accent-hover hover:underline"
+            <div className="flex shrink-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={handleToggleFollow}
+                className={
+                  venue.isFollowing
+                    ? 'rounded border border-border-strong px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover'
+                    : 'rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-text hover:bg-accent-hover'
+                }
               >
-                Invite a coworker
-              </Link>
-            )}
-
-            <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <dt className="text-sm text-text-faint">Location</dt>
-                <dd className="text-text">
-                  {[venue.suburb?.name, venue.city?.name, venue.city?.state?.name, venue.city?.state?.country?.name]
-                    .filter(Boolean)
-                    .join(', ') || '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm text-text-faint">Type</dt>
-                <dd className="text-text">{venue.venueType?.name || '—'}</dd>
-              </div>
-            </dl>
-
-            <div className="mt-4">
-              <dt className="text-sm text-text-faint">Specialties</dt>
-              <dd className="mt-2 flex flex-wrap gap-2">
-                {venue.specialties.length === 0 && <span className="text-text">—</span>}
-                {venue.specialties.map((s) => (
-                  <Tag key={s.id}>{s.name}</Tag>
-                ))}
-              </dd>
+                {venue.isFollowing ? 'Unfollow' : 'Follow'}
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleFavourite}
+                aria-label={venue.isFavourite ? 'Remove from favourites' : 'Add to favourites'}
+                className={
+                  venue.isFavourite
+                    ? 'rounded border border-accent px-3 py-1.5 text-sm text-accent'
+                    : 'rounded border border-border-strong px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover'
+                }
+              >
+                {venue.isFavourite ? '★ Favourited' : '☆ Favourite'}
+              </button>
             </div>
           </div>
         )}
@@ -178,75 +252,98 @@ function VenueDetail() {
           />
         )}
 
-        <AboutSection
-          about={venue.about}
-          canEdit={venue.canEdit}
-          onSave={handleSaveAbout}
-          emptyMessage={
-            venue.canEdit ? 'Add an introduction for this venue.' : 'No introduction added yet.'
-          }
-        />
-
-        {venue.isManager && (
-          <PostNoticeBox
-            onSubmit={(content) => api.postVenueNotice(id, content)}
-            onPosted={refreshActivity}
+        <Section title="Our Story & Culture">
+          <AboutSection
+            about={venue.about}
+            canEdit={venue.canEdit}
+            onSave={handleSaveAbout}
+            emptyMessage={venue.canEdit ? 'Add an introduction for this venue.' : 'No introduction added yet.'}
+            plain
           />
-        )}
+        </Section>
 
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-text">Jobs at this venue</h2>
-            {venue.canEdit && (
+        <Section
+          title="Updates and Announcements"
+          action={
+            venue.canEdit && (
               <Link
                 to={`/venues/${id}/jobs/new`}
                 className="text-sm text-accent hover:text-accent-hover hover:underline"
               >
                 + Post a job
               </Link>
-            )}
-          </div>
-          {jobs.length === 0 && <p className="text-sm text-text-faint">No jobs posted yet.</p>}
-          {jobs.map((job) => (
-            <Link
-              key={job.id}
-              to={`/jobs/${job.id}`}
-              className="flex items-center justify-between rounded-lg border border-border bg-surface p-4 hover:border-border-strong hover:bg-surface-hover"
-            >
-              <span className="font-medium text-text">{job.title}</span>
-              {job.status === 'CLOSED' && (
-                <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning">Closed</span>
-              )}
-            </Link>
-          ))}
-        </div>
-
-        {venue.canEdit && (
-          <div className="flex items-center justify-between rounded-lg border border-border bg-surface p-4">
-            <h2 className="text-lg font-semibold text-text">Events</h2>
-            <Link
-              to={`/venues/${id}/events/new`}
-              className="text-sm text-accent hover:text-accent-hover hover:underline"
-            >
-              + Create event
-            </Link>
-          </div>
-        )}
-
-        <div className="flex flex-col gap-3">
-          <h2 className="text-xl font-semibold text-text">Recent activity</h2>
+            )
+          }
+        >
+          {venue.isManager && (
+            <PostNoticeBox onSubmit={(content) => api.postVenueNotice(id, content)} onPosted={refreshActivity} />
+          )}
           <ShowMore
             items={activity}
-            initialCount={2}
+            initialCount={5}
             incrementCount={5}
-            emptyMessage="No activity yet."
+            emptyMessage="No updates yet."
             renderItem={(item) => <ActivityItem key={item.id} activity={item} />}
           />
-        </div>
+        </Section>
 
-        <VenueWorkers venueId={id} />
+        <Section
+          title="Events"
+          action={
+            venue.canEdit && (
+              <Link
+                to={`/venues/${id}/events/new`}
+                className="text-sm text-accent hover:text-accent-hover hover:underline"
+              >
+                + Create event
+              </Link>
+            )
+          }
+        >
+          {events.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
+          <div className="flex flex-col gap-3">
+            {events.map((event) => (
+              <Link
+                key={event.id}
+                to={`/events/${event.id}`}
+                className="flex items-center justify-between gap-3 rounded border border-border p-4 hover:border-border-strong hover:bg-surface-hover"
+              >
+                <div>
+                  <p className="font-medium text-text">{event.title}</p>
+                  <p className="text-sm text-text-faint">
+                    {formatDateTime(event.startAt)} · {event.category.name}
+                  </p>
+                </div>
+                <span className="shrink-0 text-sm text-text-faint">
+                  {event.interestCount} interested
+                </span>
+              </Link>
+            ))}
+          </div>
+        </Section>
 
-        <PastEvents ownerType="VENUE" ownerId={id} canEdit={venue.canEdit} />
+        <Section title="Who We Are Looking For">
+          {jobs.length === 0 && <p className="text-sm text-text-faint">No open roles right now.</p>}
+          <div className="flex flex-col gap-3">
+            {jobs.map((job) => (
+              <VenueJobCard
+                key={job.id}
+                job={job}
+                canManage={venue.canEdit}
+                onApply={handleApply}
+                applying={applyingId === job.id}
+              />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Staff">
+          <VenueWorkers venueId={id} />
+        </Section>
+
+        <Section title="Past Events">
+          <PastEvents ownerType="VENUE" ownerId={id} canEdit={venue.canEdit} />
+        </Section>
 
         {venue.canManageNominations && <PendingManagerRequests venueId={id} />}
 

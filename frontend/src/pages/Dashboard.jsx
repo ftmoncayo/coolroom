@@ -12,6 +12,52 @@ import SearchCombobox from '../components/SearchCombobox'
 import ShowMore from '../components/ShowMore'
 import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
+import Section from '../components/Section'
+import VenueTypeIcon from '../components/venue/VenueTypeIcon'
+
+function formatDateTime(value) {
+  if (!value) return ''
+  return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function isTrainingCategory(event) {
+  return (event.category?.name || '').trim().toLowerCase() === 'training'
+}
+
+function HomeEventCard({ event }) {
+  return (
+    <Link
+      to={`/events/${event.id}`}
+      className="flex items-center justify-between gap-3 rounded border border-border p-4 hover:border-border-strong hover:bg-surface-hover"
+    >
+      <div>
+        <p className="font-medium text-text">{event.title}</p>
+        <p className="text-sm text-text-faint">
+          {event.owner.name} · {formatDateTime(event.startAt)}
+        </p>
+      </div>
+      <span className="shrink-0 text-sm text-text-faint">{event.interestCount} interested</span>
+    </Link>
+  )
+}
+
+function NowRecruitingCard({ venue }) {
+  return (
+    <Link
+      to={`/venues/${venue.id}`}
+      className="flex items-center gap-3 rounded border border-border p-4 hover:border-border-strong hover:bg-surface-hover"
+    >
+      <VenueTypeIcon venueTypeName={venue.venueType?.name} className="h-6 w-6 shrink-0 text-text-faint" />
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-text">{venue.name}</p>
+        <p className="text-sm text-text-faint">{venue.city?.name || venue.suburb?.name || ''}</p>
+      </div>
+      <span className="shrink-0 text-sm text-text-faint">
+        {venue.openJobCount} open role{venue.openJobCount === 1 ? '' : 's'}
+      </span>
+    </Link>
+  )
+}
 
 function Dashboard() {
   const { user } = useAuth()
@@ -20,6 +66,8 @@ function Dashboard() {
   const [activities, setActivities] = useState([])
   const [suggestions, setSuggestions] = useState([])
   const [posts, setPosts] = useState([])
+  const [events, setEvents] = useState([])
+  const [recruitingVenues, setRecruitingVenues] = useState([])
   const [cityTouched, setCityTouched] = useState(false)
   const [cityOverride, setCityOverride] = useState(null)
   const [postContent, setPostContent] = useState('')
@@ -79,6 +127,26 @@ function Dashboard() {
       .catch((err) => setError(err.message))
       .finally(() => setPostsLoading(false))
   }, [cityFilter, profileLoading])
+
+  // Events/Training default to the viewer's own profile location (same
+  // server-side default the Events directory itself falls back on) - no
+  // manual filter control here, just the one always-on default scope.
+  useEffect(() => {
+    api
+      .fetchEvents({})
+      .then(setEvents)
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    api
+      .fetchNowRecruitingVenues()
+      .then(setRecruitingVenues)
+      .catch(() => {})
+  }, [])
+
+  const upcomingEvents = useMemo(() => events.filter((e) => !isTrainingCategory(e)), [events])
+  const trainingEvents = useMemo(() => events.filter(isTrainingCategory), [events])
 
   function updateSuggestion(userId, changes) {
     setSuggestions((prev) => prev.map((p) => (p.id === userId ? { ...p, ...changes } : p)))
@@ -140,7 +208,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6">
+      <div className="mx-auto flex max-w-2xl flex-col gap-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold text-text">Home</h1>
           <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -166,49 +234,42 @@ function Dashboard() {
           </div>
         )}
 
-        <form
-          onSubmit={handleCreatePost}
-          className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-6"
+        <Section
+          title="Updates and Announcements"
+          action={<LocationScopeFilter {...activityFilter.selection} onChange={activityFilter.setSelection} />}
         >
-          {postError && <p className="text-sm text-danger">{postError}</p>}
-          <textarea
-            value={postContent}
-            onChange={(e) => setPostContent(e.target.value)}
-            placeholder="Share a notice with your city..."
-            rows={3}
-            className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
-          />
-          <div className="flex items-center justify-between gap-4">
-            <label className="flex items-center gap-2 text-sm text-text-muted">
-              City
-              <div className="w-56">
-                <SearchCombobox
-                  fetchOptions={api.fetchCities}
-                  onSelect={handleCityFilterChange}
-                  allowCreate={false}
-                  initialQuery={cityFilter?.name || ''}
-                  placeholder="Search for a city..."
-                />
-              </div>
-            </label>
-            <button
-              type="submit"
-              disabled={posting || !postContent.trim()}
-              className="rounded bg-accent px-4 py-2 text-sm font-medium text-accent-text hover:bg-accent-hover disabled:opacity-50"
-            >
-              {posting ? 'Posting...' : 'Post'}
-            </button>
-          </div>
-        </form>
-
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-text">Activity</h2>
-            <LocationScopeFilter
-              {...activityFilter.selection}
-              onChange={activityFilter.setSelection}
+          <form onSubmit={handleCreatePost} className="flex flex-col gap-3 border-b border-border pb-6">
+            {postError && <p className="text-sm text-danger">{postError}</p>}
+            <textarea
+              value={postContent}
+              onChange={(e) => setPostContent(e.target.value)}
+              placeholder="Share a notice with your city..."
+              rows={3}
+              className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
             />
-          </div>
+            <div className="flex items-center justify-between gap-4">
+              <label className="flex items-center gap-2 text-sm text-text-muted">
+                City
+                <div className="w-56">
+                  <SearchCombobox
+                    fetchOptions={api.fetchCities}
+                    onSelect={handleCityFilterChange}
+                    allowCreate={false}
+                    initialQuery={cityFilter?.name || ''}
+                    placeholder="Search for a city..."
+                  />
+                </div>
+              </label>
+              <button
+                type="submit"
+                disabled={posting || !postContent.trim()}
+                className="rounded bg-accent px-4 py-2 text-sm font-medium text-accent-text hover:bg-accent-hover disabled:opacity-50"
+              >
+                {posting ? 'Posting...' : 'Post'}
+              </button>
+            </div>
+          </form>
+
           {!loading && (
             <ShowMore
               items={feedItems}
@@ -229,21 +290,46 @@ function Dashboard() {
               }
             />
           )}
-        </div>
+        </Section>
+
+        <Section title="Events">
+          {upcomingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
+          <div className="flex flex-col gap-3">
+            {upcomingEvents.map((event) => (
+              <HomeEventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Training">
+          {trainingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming training.</p>}
+          <div className="flex flex-col gap-3">
+            {trainingEvents.map((event) => (
+              <HomeEventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Now Recruiting">
+          {recruitingVenues.length === 0 && (
+            <p className="text-sm text-text-faint">
+              No venues you follow are recruiting right now.
+            </p>
+          )}
+          <div className="flex flex-col gap-3">
+            {recruitingVenues.map((venue) => (
+              <NowRecruitingCard key={venue.id} venue={venue} />
+            ))}
+          </div>
+        </Section>
 
         {!loading && (
-          <div className="rounded-lg border border-border bg-surface p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold text-text">People in your industry</h2>
-              <LocationScopeFilter
-                {...suggestionFilter.selection}
-                onChange={suggestionFilter.setSelection}
-              />
-            </div>
-            {suggestions.length === 0 && (
-              <p className="mt-4 text-sm text-text-faint">No one to show yet.</p>
-            )}
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Section
+            title="People in Your Industry"
+            action={<LocationScopeFilter {...suggestionFilter.selection} onChange={suggestionFilter.setSelection} />}
+          >
+            {suggestions.length === 0 && <p className="text-sm text-text-faint">No one to show yet.</p>}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {suggestions.map((person) => (
                 <PersonCard key={person.id} person={person}>
                   <ConnectionButton
@@ -255,7 +341,7 @@ function Dashboard() {
                 </PersonCard>
               ))}
             </div>
-          </div>
+          </Section>
         )}
       </div>
     </div>

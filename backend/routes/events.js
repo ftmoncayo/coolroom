@@ -19,6 +19,9 @@ const eventInclude = {
   },
   skills: { include: { skill: true } },
   knowledgeAreas: { include: { knowledgeArea: true } },
+  // Publicly visible interest count - DID_NOT_ATTEND is excluded the same
+  // way it's excluded from training history everywhere else.
+  _count: { select: { interests: { where: { status: { not: 'DID_NOT_ATTEND' } } } } },
 }
 
 function parseIds(ids) {
@@ -78,6 +81,7 @@ function shapeEvent(event) {
     createdAt: event.createdAt,
     skills: event.skills.map((es) => es.skill),
     knowledgeAreas: event.knowledgeAreas.map((ek) => ek.knowledgeArea),
+    interestCount: event._count?.interests ?? 0,
   }
 }
 

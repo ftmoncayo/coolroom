@@ -28,12 +28,10 @@ function TrainingHistory() {
   }, [])
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
-      <h2 className="text-xl font-semibold text-text">Training</h2>
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
-
-      <div className="mt-4 flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         {!loading && training.length === 0 && (
           <p className="text-sm text-text-faint">No training or events yet.</p>
         )}

@@ -247,6 +247,10 @@ model Profile {
   professionalTitle String
   rightToWork       Boolean
   culturalIdentity  String?
+  // Handle or full URL, as entered - normalized to a link at render time
+  // (see lib/instagram.js on the frontend) rather than at save time, so the
+  // raw value the person typed is always what's shown back to them.
+  instagram         String?
   about             String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

@@ -30,7 +30,7 @@ const profileInclude = {
   knowledgeAreas: true,
   experiences: {
     orderBy: { startDate: 'desc' },
-    include: { venue: { include: { city: true } } },
+    include: { venue: { include: { city: true, venueType: true } } },
   },
   certifications: {
     orderBy: { issueDate: 'desc' },
@@ -38,11 +38,18 @@ const profileInclude = {
   },
 }
 
+async function getConnectionsCount(userId) {
+  return prisma.connectionRequest.count({
+    where: { status: 'ACCEPTED', OR: [{ fromUserId: userId }, { toUserId: userId }] },
+  })
+}
+
 async function getOwnedProfile(userId) {
   const profile = await prisma.profile.findUnique({ where: { userId }, include: profileInclude })
   if (!profile) return profile
   const withLevels = await attachEndorsementLevels(profile)
-  return { ...withLevels, about: sanitize(profile.about) }
+  const connectionsCount = await getConnectionsCount(userId)
+  return { ...withLevels, about: sanitize(profile.about), connectionsCount }
 }
 
 function parseDate(value) {
@@ -142,6 +149,7 @@ router.put('/', async (req, res) => {
     professionalTitle,
     rightToWork,
     culturalIdentity,
+    instagram,
   } = req.body || {}
 
   if (typeof firstName !== 'string' || !firstName.trim()) {
@@ -169,6 +177,7 @@ router.put('/', async (req, res) => {
       typeof culturalIdentity === 'string' && culturalIdentity.trim()
         ? culturalIdentity.trim()
         : null,
+    instagram: typeof instagram === 'string' && instagram.trim() ? instagram.trim() : null,
   }
 
   const existingProfile = await prisma.profile.findUnique({ where: { userId: req.userId } })
@@ -245,9 +254,10 @@ router.get('/:userId', async (req, res) => {
   const myVenueIds = new Set((myProfile?.experiences || []).map((e) => e.venueId))
   const theirVenueIds = new Set(profile.experiences.map((e) => e.venueId))
   const sharedVenuesCount = [...theirVenueIds].filter((id) => myVenueIds.has(id)).length
+  const connectionsCount = await getConnectionsCount(profile.userId)
 
   res.json({
-    profile: { ...profile, about: sanitize(profile.about) },
+    profile: { ...profile, about: sanitize(profile.about), connectionsCount },
     isSelf: profile.userId === req.userId,
     ...connectionStatusFor(statusMap, profile.userId),
     mutualConnections: mutualConnectionUsers.map((u) => ({

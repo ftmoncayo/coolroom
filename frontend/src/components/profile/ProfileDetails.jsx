@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import LocationCascade from '../LocationCascade'
-import { initialLocationSelection, locationCountryName, locationString, rightToWorkLabel } from '../../lib/location'
+import { initialLocationSelection, rightToWorkLabel } from '../../lib/location'
 
-function ProfileDetails({ profile, onSave }) {
-  const [editing, setEditing] = useState(!profile)
+// Edit-only now - the read-only ID Card display moved out to ProfileHeader
+// (name/location/title) and a slimmed-down ID Card section (Right to work /
+// Cultural identity only). This form still edits all of it together, since
+// splitting the save flow in two wouldn't gain anything.
+function ProfileDetails({ profile, onSave, onCancel }) {
   const [firstName, setFirstName] = useState(profile?.firstName || '')
   const [lastName, setLastName] = useState(profile?.lastName || '')
   const initialLocation = initialLocationSelection(profile)
@@ -14,6 +17,7 @@ function ProfileDetails({ profile, onSave }) {
   const [professionalTitle, setProfessionalTitle] = useState(profile?.professionalTitle || '')
   const [rightToWork, setRightToWork] = useState(profile?.rightToWork ?? false)
   const [culturalIdentity, setCulturalIdentity] = useState(profile?.culturalIdentity || '')
+  const [instagram, setInstagram] = useState(profile?.instagram || '')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -50,59 +54,18 @@ function ProfileDetails({ profile, onSave }) {
         professionalTitle,
         rightToWork,
         culturalIdentity,
+        instagram,
       })
-      setEditing(false)
     } catch (err) {
       setError(err.message)
-    } finally {
       setSubmitting(false)
     }
   }
 
-  if (!editing) {
-    return (
-      <div className="rounded-lg border border-border bg-surface p-6">
-        <div className="flex items-start justify-between">
-          <h2 className="text-xl font-semibold text-text">ID Card</h2>
-          <button
-            onClick={() => setEditing(true)}
-            className="text-sm text-accent hover:text-accent-hover hover:underline"
-          >
-            Edit
-          </button>
-        </div>
-        <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <dt className="text-sm text-text-faint">Name</dt>
-            <dd className="text-text">
-              {[profile.firstName, profile.lastName].filter(Boolean).join(' ')}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-text-faint">Location</dt>
-            <dd className="text-text">{locationString(profile)}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-text-faint">Professional title</dt>
-            <dd className="text-text">{profile.professionalTitle}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
-            <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-text-faint">Cultural identity / background</dt>
-            <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
-          </div>
-        </dl>
-      </div>
-    )
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-6">
-      <h2 className="text-xl font-semibold text-text">
-        {profile ? 'Edit ID Card' : 'Complete your profile'}
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <h2 className="text-xl font-semibold uppercase tracking-wide text-text">
+        {profile ? 'Edit profile' : 'Complete your profile'}
       </h2>
 
       {error && <p className="text-sm text-danger">{error}</p>}
@@ -155,6 +118,17 @@ function ProfileDetails({ profile, onSave }) {
         />
       </label>
 
+      <label className="flex flex-col gap-1 text-sm text-text-muted">
+        Instagram (optional)
+        <input
+          type="text"
+          value={instagram}
+          onChange={(e) => setInstagram(e.target.value)}
+          placeholder="@handle or full URL"
+          className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
+        />
+      </label>
+
       <label className="flex items-center gap-2 text-sm text-text-muted">
         <input
           type="checkbox"
@@ -183,10 +157,10 @@ function ProfileDetails({ profile, onSave }) {
         >
           {submitting ? 'Saving...' : 'Save'}
         </button>
-        {profile && (
+        {profile && onCancel && (
           <button
             type="button"
-            onClick={() => setEditing(false)}
+            onClick={onCancel}
             className="rounded border border-border-strong px-4 py-2 text-text-muted hover:bg-surface-hover"
           >
             Cancel

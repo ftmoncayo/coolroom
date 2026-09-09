@@ -46,12 +46,12 @@ function PendingManagerRequests({ venueId }) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
-      <h2 className="text-xl font-semibold text-text">Pending manager requests</h2>
+    <div className="flex flex-col gap-3">
+      <h2 className="text-xl font-semibold uppercase tracking-wide text-text">Pending Manager Requests</h2>
 
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
         {!loading && nominations.length === 0 && (
           <p className="text-sm text-text-faint">No pending requests.</p>
         )}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
 import VenuePicker from '../VenuePicker'
 import VenueForm from '../venue/VenueForm'
+import VenueTypeIcon from '../venue/VenueTypeIcon'
 import Modal from '../Modal'
 
 const emptyForm = { venue: null, roleTitle: '', startDate: '', endDate: '', isCurrent: false }
@@ -172,37 +173,40 @@ function ExperienceEditor({ profile, experiences, onCreate, onUpdate, onDelete, 
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-text">Experience</h2>
-        {profile && !adding && (
-          <button
-            onClick={() => setAdding(true)}
-            className="text-sm text-accent hover:text-accent-hover hover:underline"
-          >
-            + Add experience
-          </button>
-        )}
-      </div>
+    <div className="flex flex-col gap-3">
+      {profile && !adding && (
+        <button
+          onClick={() => setAdding(true)}
+          className="self-start text-sm text-accent hover:text-accent-hover hover:underline"
+        >
+          + Add experience
+        </button>
+      )}
 
       {!profile && (
-        <p className="mt-2 text-sm text-text-faint">
-          Complete your ID Card above before adding experience.
+        <p className="text-sm text-text-faint">
+          Complete your profile above before adding experience.
         </p>
       )}
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
         {experiences.map((exp) => (
           <div key={exp.id} className="flex items-start justify-between rounded border border-border p-4">
-            <div>
-              <p className="font-medium text-text">{exp.roleTitle}</p>
-              <Link to={`/venues/${exp.venue.id}`} className="text-sm text-accent hover:text-accent-hover hover:underline">
-                {exp.venue.name}
-              </Link>
-              <p className="text-sm text-text-faint">
-                {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
-              </p>
+            <div className="flex items-start gap-3">
+              <VenueTypeIcon
+                venueTypeName={exp.venue.venueType?.name}
+                className="mt-1 h-5 w-5 shrink-0 text-text-faint"
+              />
+              <div>
+                <p className="font-medium text-text">{exp.roleTitle}</p>
+                <Link to={`/venues/${exp.venue.id}`} className="text-sm text-accent hover:text-accent-hover hover:underline">
+                  {exp.venue.name}
+                </Link>
+                <p className="text-sm text-text-faint">
+                  {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
+                </p>
+              </div>
             </div>
             <div className="flex gap-3 text-sm">
               <button onClick={() => setEditingId(exp.id)} className="text-accent hover:text-accent-hover hover:underline">

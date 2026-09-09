@@ -108,27 +108,24 @@ function CertificationsEditor({ profile, certifications, onCreate, onUpdate, onD
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-text">Certifications</h2>
-        {profile && !adding && (
-          <button
-            onClick={() => setAdding(true)}
-            className="text-sm text-accent hover:text-accent-hover hover:underline"
-          >
-            + Add certification
-          </button>
-        )}
-      </div>
+    <div className="flex flex-col gap-3">
+      {profile && !adding && (
+        <button
+          onClick={() => setAdding(true)}
+          className="self-start text-sm text-accent hover:text-accent-hover hover:underline"
+        >
+          + Add certification
+        </button>
+      )}
 
       {!profile && (
-        <p className="mt-2 text-sm text-text-faint">
-          Complete your ID Card above before adding certifications.
+        <p className="text-sm text-text-faint">
+          Complete your profile above before adding certifications.
         </p>
       )}
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="mt-4 flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
         {certifications.map((cert) => (
           <div key={cert.id} className="flex items-start justify-between rounded border border-border p-4">
             <div>

@@ -418,6 +418,11 @@ export async function verifyVenue(id, verified = true) {
   return data.venue
 }
 
+export async function fetchNowRecruitingVenues() {
+  const data = await authRequest('/api/venues/now-recruiting')
+  return data.venues
+}
+
 export async function fetchAdminVenues(search) {
   const params = new URLSearchParams()
   if (search) params.set('search', search)

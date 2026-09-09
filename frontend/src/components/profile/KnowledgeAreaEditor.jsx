@@ -34,12 +34,9 @@ function KnowledgeAreaEditor({ profile, onAdd, onRemove }) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
-      <div className="flex items-center gap-2">
-        <h2 className="text-xl font-semibold text-text">Knowledge Bank</h2>
-        <TagLevelInfo />
-      </div>
-      <p className="mt-1 text-sm text-text-faint">
+    <div className="flex flex-col gap-3">
+      <TagLevelInfo />
+      <p className="text-sm text-text-faint">
         Informal know-how, e.g. "Japanese Whiskey," "Wine," "Beer Brewing."
       </p>
       {!profile && (

@@ -161,6 +161,9 @@ function JobDetail() {
                 >
                   {job.venue.name}
                 </Link>
+                <p className="mt-1 text-sm text-text-faint">
+                  {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
+                </p>
               </div>
               {job.canEdit && (
                 <div className="flex shrink-0 items-center gap-3">

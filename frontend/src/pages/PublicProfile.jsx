@@ -11,7 +11,10 @@ import TagLevelInfo from '../components/TagLevelInfo'
 import PersonCard from '../components/PersonCard'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
-import { locationCountryName, locationString, rightToWorkLabel } from '../lib/location'
+import Section from '../components/Section'
+import ProfileHeader from '../components/profile/ProfileHeader'
+import VenueTypeIcon from '../components/venue/VenueTypeIcon'
+import { locationCountryName, rightToWorkLabel } from '../lib/location'
 
 function formatDate(value) {
   if (!value) return ''
@@ -102,28 +105,24 @@ function PublicProfile() {
   }
 
   const { profile } = data
-  const name = [profile.firstName, profile.lastName].filter(Boolean).join(' ')
 
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
-      <div className="mx-auto flex max-w-2xl flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-text">{name}</h1>
-            <p className="text-sm text-text-faint">
-              {data.mutualConnections.length} connection{data.mutualConnections.length === 1 ? '' : 's'} in
-              common, {data.sharedVenuesCount} venue{data.sharedVenuesCount === 1 ? '' : 's'} in common
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <ReportButton targetType="PROFILE" targetId={userId} />
-            <Link to="/discover" className="text-sm text-accent hover:text-accent-hover hover:underline">
-              Back to discover
-            </Link>
-          </div>
+      <div className="mx-auto flex max-w-2xl flex-col gap-8">
+        <div className="flex items-center justify-end gap-3">
+          <ReportButton targetType="PROFILE" targetId={userId} />
+          <Link to="/discover" className="text-sm text-accent hover:text-accent-hover hover:underline">
+            Back to discover
+          </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <ProfileHeader
+          profile={profile}
+          connectionsCount={profile.connectionsCount}
+          extraStat={`${data.mutualConnections.length} connection${
+            data.mutualConnections.length === 1 ? '' : 's'
+          } in common, ${data.sharedVenuesCount} venue${data.sharedVenuesCount === 1 ? '' : 's'} in common`}
+        >
           <ConnectionButton
             status={data.connectionStatus}
             onConnect={handleConnect}
@@ -139,28 +138,15 @@ function PublicProfile() {
               >
                 Message
               </button>
-              <button
-                type="button"
-                onClick={handleRemove}
-                className="text-sm text-danger hover:underline"
-              >
+              <button type="button" onClick={handleRemove} className="text-sm text-danger hover:underline">
                 Remove connection
               </button>
             </>
           )}
-        </div>
+        </ProfileHeader>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <h2 className="text-xl font-semibold text-text">ID Card</h2>
-          <dl className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-text-faint">Location</dt>
-              <dd className="text-text">{locationString(profile)}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-text-faint">Professional title</dt>
-              <dd className="text-text">{profile.professionalTitle}</dd>
-            </div>
+        <Section title="ID Card">
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
               <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
@@ -170,12 +156,13 @@ function PublicProfile() {
               <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
             </div>
           </dl>
-        </div>
+        </Section>
 
-        <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." />
+        <Section title="About">
+          <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
+        </Section>
 
-        <div className="flex flex-col gap-3">
-          <h2 className="text-xl font-semibold text-text">Recent activity</h2>
+        <Section title="Recent Activity">
           <ShowMore
             items={activity}
             initialCount={2}
@@ -183,14 +170,38 @@ function PublicProfile() {
             emptyMessage="No activity yet."
             renderItem={(item) => <ActivityItem key={item.id} activity={item} />}
           />
-        </div>
+        </Section>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-text">Skills</h2>
-            <TagLevelInfo />
+        <Section title="Experience">
+          <div className="flex flex-col gap-3">
+            {profile.experiences.map((exp) => (
+              <div key={exp.id} className="flex items-start gap-3 rounded border border-border p-4">
+                <VenueTypeIcon
+                  venueTypeName={exp.venue.venueType?.name}
+                  className="mt-1 h-5 w-5 shrink-0 text-text-faint"
+                />
+                <div>
+                  <p className="font-medium text-text">{exp.roleTitle}</p>
+                  <Link
+                    to={`/venues/${exp.venue.id}`}
+                    className="text-sm text-accent hover:text-accent-hover hover:underline"
+                  >
+                    {exp.venue.name}
+                  </Link>
+                  <p className="text-sm text-text-faint">
+                    {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {profile.experiences.length === 0 && (
+              <p className="text-sm text-text-faint">No experience added yet.</p>
+            )}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+        </Section>
+
+        <Section title="Skills" action={<TagLevelInfo />}>
+          <div className="flex flex-wrap gap-2">
             {profile.skills.map((skill) => (
               <Tag key={skill.id} level={skill.level}>
                 {skill.name}
@@ -198,14 +209,10 @@ function PublicProfile() {
             ))}
             {profile.skills.length === 0 && <p className="text-sm text-text-faint">No skills added yet.</p>}
           </div>
-        </div>
+        </Section>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-text">Knowledge Bank</h2>
-            <TagLevelInfo />
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
+        <Section title="Knowledge Bank" action={<TagLevelInfo />}>
+          <div className="flex flex-wrap gap-2">
             {profile.knowledgeAreas.map((area) => (
               <Tag key={area.id} level={area.level}>
                 {area.name}
@@ -215,34 +222,10 @@ function PublicProfile() {
               <p className="text-sm text-text-faint">No knowledge areas added yet.</p>
             )}
           </div>
-        </div>
+        </Section>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <h2 className="text-xl font-semibold text-text">Experience</h2>
-          <div className="mt-4 flex flex-col gap-3">
-            {profile.experiences.map((exp) => (
-              <div key={exp.id} className="rounded border border-border p-4">
-                <p className="font-medium text-text">{exp.roleTitle}</p>
-                <Link
-                  to={`/venues/${exp.venue.id}`}
-                  className="text-sm text-accent hover:text-accent-hover hover:underline"
-                >
-                  {exp.venue.name}
-                </Link>
-                <p className="text-sm text-text-faint">
-                  {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
-                </p>
-              </div>
-            ))}
-            {profile.experiences.length === 0 && (
-              <p className="text-sm text-text-faint">No experience added yet.</p>
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <h2 className="text-xl font-semibold text-text">Certifications</h2>
-          <div className="mt-4 flex flex-col gap-3">
+        <Section title="Certifications">
+          <div className="flex flex-col gap-3">
             {profile.certifications.map((cert) => (
               <div key={cert.id} className="rounded border border-border p-4">
                 <p className="font-medium text-text">{cert.certificationType?.name}</p>
@@ -256,11 +239,10 @@ function PublicProfile() {
               <p className="text-sm text-text-faint">No certifications added yet.</p>
             )}
           </div>
-        </div>
+        </Section>
 
-        <div className="rounded-lg border border-border bg-surface p-6">
-          <h2 className="text-xl font-semibold text-text">Connections in common</h2>
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Section title="Connections in Common">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {data.mutualConnections.map((person) => (
               <PersonCard key={person.id} person={person} />
             ))}
@@ -268,7 +250,7 @@ function PublicProfile() {
               <p className="text-sm text-text-faint">No connections in common yet.</p>
             )}
           </div>
-        </div>
+        </Section>
       </div>
     </div>
   )

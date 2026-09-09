@@ -39,6 +39,9 @@ function JobCard({ job }) {
         {job.mutualConnectionsAtVenue} mutual connection{job.mutualConnectionsAtVenue === 1 ? '' : 's'} at this
         venue
       </p>
+      <p className="text-sm text-text-faint">
+        {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
+      </p>
     </Link>
   )
 }

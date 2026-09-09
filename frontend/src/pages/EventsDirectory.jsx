@@ -34,6 +34,7 @@ function EventCard({ event }) {
           {[event.locationVenue.name, event.locationVenue.city?.name].filter(Boolean).join(', ')}
         </p>
       )}
+      <p className="text-sm text-text-faint">{event.interestCount} interested</p>
     </Link>
   )
 }

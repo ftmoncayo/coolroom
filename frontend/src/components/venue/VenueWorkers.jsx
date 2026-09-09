@@ -90,12 +90,10 @@ function VenueWorkers({ venueId }) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
-      <h2 className="text-xl font-semibold text-text">Staff</h2>
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
-
-      <div className="mt-4 flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div>
           <h3 className="text-sm font-medium text-text-faint">Current</h3>
           <div className="mt-2 flex flex-col gap-2">

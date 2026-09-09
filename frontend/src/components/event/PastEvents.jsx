@@ -32,7 +32,6 @@ function PastEvents({ ownerType, ownerId, canEdit }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-xl font-semibold text-text">Past events</h2>
       {error && <p className="text-sm text-danger">{error}</p>}
       {events.length === 0 && <p className="text-sm text-text-faint">No past events yet.</p>}
       {events.map((event) => (

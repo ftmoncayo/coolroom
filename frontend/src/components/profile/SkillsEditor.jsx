@@ -34,11 +34,8 @@ function SkillsEditor({ profile, onAdd, onRemove }) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
-      <div className="flex items-center gap-2">
-        <h2 className="text-xl font-semibold text-text">Skills</h2>
-        <TagLevelInfo />
-      </div>
+    <div className="flex flex-col gap-3">
+      <TagLevelInfo />
       {!profile && (
         <p className="mt-2 text-sm text-text-faint">
           Complete your ID Card above before adding skills.

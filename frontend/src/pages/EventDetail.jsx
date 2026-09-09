@@ -103,6 +103,9 @@ function EventDetail() {
                 >
                   {event.owner.name}
                 </Link>
+                <p className="mt-1 text-sm text-text-faint">
+                  {event.interestCount} interested
+                </p>
               </div>
               {event.canEdit && (
                 <button

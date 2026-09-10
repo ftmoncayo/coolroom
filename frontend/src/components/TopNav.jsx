@@ -17,6 +17,7 @@ function buildPrimaryLinks(unreadMessageCount) {
     { to: '/events', label: 'Events' },
     { to: '/messages', label: unreadMessageCount > 0 ? `Messages (${unreadMessageCount})` : 'Messages' },
     { to: '/feedback', label: 'Feedback' },
+    { to: '/about', label: 'About' },
   ]
 }
 

@@ -30,6 +30,9 @@ function Home() {
           Sign Up
         </Link>
       </div>
+      <Link to="/about" className="text-sm text-text-muted hover:text-accent hover:underline">
+        About Staffie
+      </Link>
     </div>
   )
 }

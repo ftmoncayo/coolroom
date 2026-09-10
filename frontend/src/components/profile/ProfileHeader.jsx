@@ -55,7 +55,12 @@ function ProfileHeader({ profile, connectionsCount, isOwn, onEdit, extraStat, ch
             </a>
           )}
         </div>
-        {extraStat && <p className="text-sm text-text-faint">{extraStat}</p>}
+        {extraStat &&
+          (Array.isArray(extraStat) ? extraStat : [extraStat]).map((line, i) => (
+            <p key={i} className="text-sm text-text-faint">
+              {line}
+            </p>
+          ))}
       </div>
 
       {children && <div className="flex shrink-0 flex-wrap items-center gap-3">{children}</div>}

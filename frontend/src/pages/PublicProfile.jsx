@@ -107,9 +107,10 @@ function PublicProfile() {
         <ProfileHeader
           profile={profile}
           connectionsCount={profile.connectionsCount}
-          extraStat={`${data.mutualConnections.length} connection${
-            data.mutualConnections.length === 1 ? '' : 's'
-          } in common, ${data.sharedVenuesCount} venue${data.sharedVenuesCount === 1 ? '' : 's'} in common`}
+          extraStat={[
+            `${data.mutualConnections.length} connection${data.mutualConnections.length === 1 ? '' : 's'} in common`,
+            `${data.sharedVenuesCount} venue${data.sharedVenuesCount === 1 ? '' : 's'} in common`,
+          ]}
         >
           <ConnectionButton
             status={data.connectionStatus}

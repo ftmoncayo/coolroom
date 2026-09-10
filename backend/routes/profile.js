@@ -149,6 +149,7 @@ router.put('/', async (req, res) => {
     professionalTitle,
     rightToWork,
     culturalIdentity,
+    languages,
     instagram,
   } = req.body || {}
 
@@ -177,6 +178,7 @@ router.put('/', async (req, res) => {
       typeof culturalIdentity === 'string' && culturalIdentity.trim()
         ? culturalIdentity.trim()
         : null,
+    languages: typeof languages === 'string' && languages.trim() ? languages.trim() : null,
     instagram: typeof instagram === 'string' && instagram.trim() ? instagram.trim() : null,
   }
 

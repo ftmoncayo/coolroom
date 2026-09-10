@@ -104,10 +104,6 @@ function PublicProfile() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
-        <div className="flex items-center justify-end gap-3">
-          <ReportButton targetType="PROFILE" targetId={userId} />
-        </div>
-
         <ProfileHeader
           profile={profile}
           connectionsCount={profile.connectionsCount}
@@ -140,17 +136,21 @@ function PublicProfile() {
         <Section title="ID Card">
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
-              <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
-            </div>
-            <div>
               <dt className="text-sm text-text-faint">Cultural identity / background</dt>
               <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-text-faint">Languages spoken</dt>
+              <dd className="text-text">{profile.languages || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
+              <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
             </div>
           </dl>
         </Section>
 
-        <Section title="About">
+        <Section title="About Me">
           <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
         </Section>
 
@@ -243,6 +243,10 @@ function PublicProfile() {
             )}
           </div>
         </Section>
+
+        <div className="flex justify-end">
+          <ReportButton targetType="PROFILE" targetId={userId} />
+        </div>
       </div>
     </div>
   )

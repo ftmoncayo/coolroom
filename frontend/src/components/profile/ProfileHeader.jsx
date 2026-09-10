@@ -15,17 +15,17 @@ function ProfileHeader({ profile, connectionsCount, isOwn, onEdit, extraStat, ch
   const name = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ')
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-center gap-5">
       <div
-        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-border-strong bg-surface text-lg font-semibold text-text-muted"
+        className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border-2 border-border-strong bg-surface text-xl font-semibold text-text-muted"
         aria-hidden="true"
       >
         {initials(profile)}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold text-text">{name || 'Unnamed'}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-text">{name || 'Unnamed'}</h1>
           {isOwn && (
             <button
               type="button"
@@ -36,7 +36,9 @@ function ProfileHeader({ profile, connectionsCount, isOwn, onEdit, extraStat, ch
             </button>
           )}
         </div>
-        {profile?.professionalTitle && <p className="text-sm text-text-muted">{profile.professionalTitle}</p>}
+        {profile?.professionalTitle && (
+          <p className="text-base font-medium text-text-muted">{profile.professionalTitle}</p>
+        )}
         <p className="text-sm text-text-faint">{locationString(profile)}</p>
         <div className="flex flex-wrap items-center gap-3 text-sm text-text-faint">
           <span>

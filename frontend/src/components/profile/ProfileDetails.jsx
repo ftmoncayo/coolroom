@@ -17,6 +17,7 @@ function ProfileDetails({ profile, onSave, onCancel }) {
   const [professionalTitle, setProfessionalTitle] = useState(profile?.professionalTitle || '')
   const [rightToWork, setRightToWork] = useState(profile?.rightToWork ?? false)
   const [culturalIdentity, setCulturalIdentity] = useState(profile?.culturalIdentity || '')
+  const [languages, setLanguages] = useState(profile?.languages || '')
   const [instagram, setInstagram] = useState(profile?.instagram || '')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -54,6 +55,7 @@ function ProfileDetails({ profile, onSave, onCancel }) {
         professionalTitle,
         rightToWork,
         culturalIdentity,
+        languages,
         instagram,
       })
     } catch (err) {
@@ -129,16 +131,6 @@ function ProfileDetails({ profile, onSave, onCancel }) {
         />
       </label>
 
-      <label className="flex items-center gap-2 text-sm text-text-muted">
-        <input
-          type="checkbox"
-          checked={rightToWork}
-          onChange={(e) => setRightToWork(e.target.checked)}
-          className="h-4 w-4 accent-accent"
-        />
-        {rightToWorkLabel(country?.name)}
-      </label>
-
       <label className="flex flex-col gap-1 text-sm text-text-muted">
         Cultural identity / background (optional)
         <textarea
@@ -147,6 +139,27 @@ function ProfileDetails({ profile, onSave, onCancel }) {
           rows={3}
           className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
         />
+      </label>
+
+      <label className="flex flex-col gap-1 text-sm text-text-muted">
+        Languages spoken (optional)
+        <input
+          type="text"
+          value={languages}
+          onChange={(e) => setLanguages(e.target.value)}
+          placeholder="e.g. English, Spanish"
+          className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
+        />
+      </label>
+
+      <label className="flex items-center gap-2 text-sm text-text-muted">
+        <input
+          type="checkbox"
+          checked={rightToWork}
+          onChange={(e) => setRightToWork(e.target.checked)}
+          className="h-4 w-4 accent-accent"
+        />
+        {rightToWorkLabel(country?.name)}
       </label>
 
       <div className="flex gap-3">

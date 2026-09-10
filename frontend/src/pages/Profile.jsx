@@ -194,19 +194,23 @@ function Profile() {
             <Section title="ID Card">
               <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
-                  <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
-                </div>
-                <div>
                   <dt className="text-sm text-text-faint">Cultural identity / background</dt>
                   <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-text-faint">Languages spoken</dt>
+                  <dd className="text-text">{profile.languages || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
+                  <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
                 </div>
               </dl>
             </Section>
           </>
         )}
 
-        <Section title="About">
+        <Section title="About Me">
           <AboutSection
             about={profile?.about}
             canEdit={Boolean(profile)}

@@ -167,6 +167,10 @@ export function saveProfile(profile) {
   })
 }
 
+export function fetchProfileViewers() {
+  return authRequest('/api/profile/me/viewers')
+}
+
 export async function saveProfileAbout(about) {
   const data = await authRequest('/api/profile/about', {
     method: 'PUT',

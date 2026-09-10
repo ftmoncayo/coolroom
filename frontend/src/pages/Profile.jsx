@@ -12,6 +12,7 @@ import ExperienceEditor from '../components/profile/ExperienceEditor'
 import TrainingHistory from '../components/profile/TrainingHistory'
 import CertificationsEditor from '../components/profile/CertificationsEditor'
 import ConnectionsList from '../components/profile/ConnectionsList'
+import ProfileViewers from '../components/profile/ProfileViewers'
 import AboutSection from '../components/AboutSection'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
@@ -207,6 +208,12 @@ function Profile() {
                 </div>
               </dl>
             </Section>
+
+            {profile && (
+              <Section title="Who's Viewed Your Profile">
+                <ProfileViewers browseAnonymously={profile.browseAnonymously} />
+              </Section>
+            )}
           </>
         )}
 

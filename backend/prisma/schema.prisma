@@ -69,6 +69,9 @@ model User {
   sentMessages         Message[]
 
   reportsFiled Report[] @relation("ReportReporter")
+
+  profileViewsGiven    ProfileView[] @relation("ProfileViewViewer")
+  profileViewsReceived ProfileView[] @relation("ProfileViewViewed")
 }
 
 enum ActivityType {
@@ -255,6 +258,11 @@ model Profile {
   // raw value the person typed is always what's shown back to them.
   instagram         String?
   about             String?
+  // Owner-only setting: when true, this profile's views of OTHER people's
+  // profiles are recorded anonymously (see ProfileView.anonymous) - and, in
+  // exchange, GET /api/profile/me/viewers stops showing this person their
+  // own named viewers too (see the route for the reciprocity rule).
+  browseAnonymously Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -264,6 +272,25 @@ model Profile {
   certifications Certification[]
   endorsements   Endorsement[]
   upskillings    Upskilling[]
+}
+
+// One row per (viewer, viewed) pair per calendar day (debounced in
+// routes/profile.js - GET /:userId, not enforced by a DB constraint since
+// "calendar day" is evaluated in application code). `anonymous` is a
+// snapshot of the viewer's Profile.browseAnonymously at the moment of the
+// view - it never changes retroactively if they later toggle that setting,
+// so past views stay attributed the way they actually happened.
+model ProfileView {
+  id           String   @id @default(uuid())
+  viewerUserId String
+  viewerUser   User     @relation("ProfileViewViewer", fields: [viewerUserId], references: [id], onDelete: Cascade)
+  viewedUserId String
+  viewedUser   User     @relation("ProfileViewViewed", fields: [viewedUserId], references: [id], onDelete: Cascade)
+  anonymous    Boolean
+  createdAt    DateTime @default(now())
+
+  @@index([viewedUserId, createdAt])
+  @@index([viewerUserId, viewedUserId, createdAt])
 }
 
 model Country {

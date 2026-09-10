@@ -19,6 +19,7 @@ function ProfileDetails({ profile, onSave, onCancel }) {
   const [culturalIdentity, setCulturalIdentity] = useState(profile?.culturalIdentity || '')
   const [languages, setLanguages] = useState(profile?.languages || '')
   const [instagram, setInstagram] = useState(profile?.instagram || '')
+  const [browseAnonymously, setBrowseAnonymously] = useState(profile?.browseAnonymously ?? false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -57,6 +58,7 @@ function ProfileDetails({ profile, onSave, onCancel }) {
         culturalIdentity,
         languages,
         instagram,
+        browseAnonymously,
       })
     } catch (err) {
       setError(err.message)
@@ -160,6 +162,22 @@ function ProfileDetails({ profile, onSave, onCancel }) {
           className="h-4 w-4 accent-accent"
         />
         {rightToWorkLabel(country?.name)}
+      </label>
+
+      <label className="flex items-start gap-2 text-sm text-text-muted">
+        <input
+          type="checkbox"
+          checked={browseAnonymously}
+          onChange={(e) => setBrowseAnonymously(e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-accent"
+        />
+        <span>
+          Browse anonymously
+          <span className="block text-xs text-text-faint">
+            Hides your name when you view other people's profiles. In exchange, you won't see who's named
+            in your own "Who's viewed your profile" list either — just the total count.
+          </span>
+        </span>
       </label>
 
       <div className="flex gap-3">

@@ -63,6 +63,39 @@ async function requesterIsAdmin(userId) {
   return Boolean(requester?.isAdmin)
 }
 
+const PROFILE_VIEWERS_WINDOW_DAYS = 30
+const PROFILE_VIEWERS_LIMIT = 50
+
+// Debounced to once per (viewer, viewed) pair per calendar day (UTC) - never
+// recorded for a self-view, or when the viewer is an admin/moderator (their
+// browsing isn't a meaningful "who's interested in me" signal). `anonymous`
+// snapshots the viewer's current Profile.browseAnonymously at view time and
+// is never revisited if they later toggle that setting - see the ProfileView
+// model comment in schema.prisma.
+async function recordProfileView(viewerUserId, viewedUserId) {
+  if (viewerUserId === viewedUserId) return
+
+  const viewer = await prisma.user.findUnique({
+    where: { id: viewerUserId },
+    select: { isAdmin: true, isModerator: true, profile: { select: { browseAnonymously: true } } },
+  })
+  if (!viewer || viewer.isAdmin || viewer.isModerator) return
+
+  const startOfDay = new Date()
+  startOfDay.setUTCHours(0, 0, 0, 0)
+  const startOfNextDay = new Date(startOfDay)
+  startOfNextDay.setUTCDate(startOfNextDay.getUTCDate() + 1)
+
+  const existing = await prisma.profileView.findFirst({
+    where: { viewerUserId, viewedUserId, createdAt: { gte: startOfDay, lt: startOfNextDay } },
+  })
+  if (existing) return
+
+  await prisma.profileView.create({
+    data: { viewerUserId, viewedUserId, anonymous: Boolean(viewer.profile?.browseAnonymously) },
+  })
+}
+
 // Resolves whichever location level the cascading control was left on -
 // suburb, city, state, or country, checked in that order from deepest to
 // shallowest - and returns data with only that one field populated. This
@@ -152,6 +185,7 @@ router.put('/', async (req, res) => {
     culturalIdentity,
     languages,
     instagram,
+    browseAnonymously,
   } = req.body || {}
 
   if (typeof firstName !== 'string' || !firstName.trim()) {
@@ -181,6 +215,7 @@ router.put('/', async (req, res) => {
         : null,
     languages: typeof languages === 'string' && languages.trim() ? languages.trim() : null,
     instagram: typeof instagram === 'string' && instagram.trim() ? instagram.trim() : null,
+    browseAnonymously: browseAnonymously === true,
   }
 
   const existingProfile = await prisma.profile.findUnique({ where: { userId: req.userId } })
@@ -214,6 +249,50 @@ router.put('/about', requireProfile, async (req, res) => {
   res.json({ profile })
 })
 
+router.get('/me/viewers', async (req, res) => {
+  const myProfile = await prisma.profile.findUnique({
+    where: { userId: req.userId },
+    select: { browseAnonymously: true },
+  })
+  if (!myProfile) {
+    return res.json({ totalCount: 0, viewers: [] })
+  }
+
+  const since = new Date(Date.now() - PROFILE_VIEWERS_WINDOW_DAYS * 24 * 60 * 60 * 1000)
+  const totalCount = await prisma.profileView.count({
+    where: { viewedUserId: req.userId, createdAt: { gte: since } },
+  })
+
+  // Browsing anonymously yourself trades away seeing your own named
+  // viewers too, not just hiding your identity from others.
+  if (myProfile.browseAnonymously) {
+    return res.json({ totalCount, viewers: [] })
+  }
+
+  const views = await prisma.profileView.findMany({
+    where: { viewedUserId: req.userId, createdAt: { gte: since } },
+    orderBy: { createdAt: 'desc' },
+    take: PROFILE_VIEWERS_LIMIT,
+  })
+
+  const namedViewerIds = [...new Set(views.filter((v) => !v.anonymous).map((v) => v.viewerUserId))]
+  const namedViewerUsers = namedViewerIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: namedViewerIds } },
+        include: { profile: { include: { city: true } } },
+      })
+    : []
+  const viewerById = new Map(namedViewerUsers.map((u) => [u.id, u]))
+
+  const viewers = views.map((v) =>
+    v.anonymous
+      ? { anonymous: true, viewedAt: v.createdAt }
+      : { anonymous: false, viewedAt: v.createdAt, viewer: formatActor(viewerById.get(v.viewerUserId)) },
+  )
+
+  res.json({ totalCount, viewers })
+})
+
 router.get('/:userId', async (req, res) => {
   const targetUser = await prisma.user.findUnique({
     where: { id: req.params.userId },
@@ -235,6 +314,8 @@ router.get('/:userId', async (req, res) => {
     return res.status(404).json({ error: 'Profile not found' })
   }
   const profile = await attachEndorsementLevels(rawProfile)
+
+  await recordProfileView(req.userId, req.params.userId)
 
   const [statusMap, adjacency] = await Promise.all([
     buildConnectionStatusMap(req.userId),

@@ -10,6 +10,7 @@ const {
 const { formatActivities, formatActor } = require('../lib/activityFeed')
 const {
   PEER_NOTIFY_LIMIT,
+  computeLevel,
   attachEndorsementLevels,
   getWorkerVenueIds,
   getEligiblePeerUserIds,
@@ -441,44 +442,83 @@ router.post('/request-endorsements', requireProfile, async (req, res) => {
     return res.status(400).json({ error: 'None of the selected items were found on your profile' })
   }
 
-  let recipientUserIds = []
+  let peerUserIds = []
   if (recipientScope === 'PEERS' || recipientScope === 'BOTH') {
     const peers = await getEligiblePeerUserIds(req.profile.id, req.userId)
-    recipientUserIds.push(...peers.slice(0, PEER_NOTIFY_LIMIT))
+    peerUserIds = peers.slice(0, PEER_NOTIFY_LIMIT)
   }
+  let managerUserIds = []
   if (recipientScope === 'MANAGERS' || recipientScope === 'BOTH') {
     const venueIds = await getWorkerVenueIds(req.profile.id)
-    const managers = await getEligibleManagerUserIds(venueIds, req.userId)
-    recipientUserIds.push(...managers)
+    managerUserIds = await getEligibleManagerUserIds(venueIds, req.userId)
   }
-  recipientUserIds = [...new Set(recipientUserIds)]
+  const allRecipientUserIds = [...new Set([...peerUserIds, ...managerUserIds])]
 
-  if (recipientUserIds.length === 0) {
+  if (allRecipientUserIds.length === 0) {
     return res.status(400).json({ error: 'Endorsements can only be sent to present and past colleagues and managers that you are connected to.' })
   }
 
-  for (const recipientUserId of recipientUserIds) {
-    for (const item of validItems) {
+  // A second peer endorsement can't raise a Tick item any further, and Star
+  // is already the ceiling - so per item, narrow (or drop) who gets asked
+  // based on its current tier, on top of whatever scope was chosen. Level 1
+  // and Upskilling items are untouched: they still go to the full chosen
+  // scope, same as before this per-item narrowing existed.
+  const itemFilter = validItems.map((item) => ({ itemType: item.itemType, itemId: item.itemId }))
+  const [existingEndorsements, existingUpskillings] = await Promise.all([
+    prisma.endorsement.findMany({ where: { profileId: req.profile.id, OR: itemFilter } }),
+    prisma.upskilling.findMany({ where: { profileId: req.profile.id, OR: itemFilter } }),
+  ])
+  const endorsementsByItem = new Map()
+  for (const e of existingEndorsements) {
+    const key = `${e.itemType}:${e.itemId}`
+    if (!endorsementsByItem.has(key)) endorsementsByItem.set(key, [])
+    endorsementsByItem.get(key).push(e)
+  }
+  const upskilledKeys = new Set(existingUpskillings.map((u) => `${u.itemType}:${u.itemId}`))
+
+  const notifiedUserIds = new Set()
+  let sentItemCount = 0
+
+  for (const item of validItems) {
+    const key = `${item.itemType}:${item.itemId}`
+    const level = computeLevel(endorsementsByItem.get(key) || [], upskilledKeys.has(key))
+
+    let itemRecipientIds
+    if (level === 3) itemRecipientIds = []
+    else if (level === 2) itemRecipientIds = managerUserIds
+    else itemRecipientIds = allRecipientUserIds
+
+    if (itemRecipientIds.length === 0) continue
+    sentItemCount += 1
+
+    for (const recipientUserId of itemRecipientIds) {
       await createEndorsementRequestIfNeeded({
         recipientUserId,
         workerUserId: req.userId,
         itemType: item.itemType,
         itemId: item.itemId,
       })
+      notifiedUserIds.add(recipientUserId)
     }
   }
 
+  if (notifiedUserIds.size === 0) {
+    return res.status(400).json({
+      error: 'The selected item(s) are already at their maximum eligible tier for the chosen recipients - nothing to request.',
+    })
+  }
+
   const recipientUsers = await prisma.user.findMany({
-    where: { id: { in: recipientUserIds } },
+    where: { id: { in: [...notifiedUserIds] } },
     include: { profile: { include: { city: true } } },
   })
   const recipientById = new Map(recipientUsers.map((u) => [u.id, u]))
-  const recipients = recipientUserIds.map((id) => formatActor(recipientById.get(id)))
+  const recipients = [...notifiedUserIds].map((id) => formatActor(recipientById.get(id)))
 
   res.status(201).json({
     ok: true,
-    recipientCount: recipientUserIds.length,
-    itemCount: validItems.length,
+    recipientCount: recipients.length,
+    itemCount: sentItemCount,
     recipients,
   })
 })

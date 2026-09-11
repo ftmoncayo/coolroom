@@ -38,6 +38,8 @@ function notificationText(n) {
       return `Your request to manage ${n.targetName || 'this venue/business'} was declined`
     case 'MESSAGE':
       return `${name} sent you a message`
+    case 'PROFILE_VIEW_DIGEST':
+      return `${n.viewCount} ${n.viewCount === 1 ? 'person' : 'people'} viewed your profile since you were last here`
     default:
       return 'New notification'
   }
@@ -45,6 +47,7 @@ function notificationText(n) {
 
 function notificationLink(n) {
   if (n.type === 'MESSAGE') return `/messages/${n.targetId}`
+  if (n.type === 'PROFILE_VIEW_DIGEST') return '/profile'
   if (n.type === 'CONNECTION_REQUEST') return '/connections/requests'
   if (n.type === 'CONNECTION_ACCEPTED') return n.sourceUser ? `/profile/${n.sourceUser.id}` : '/connections'
   if (n.type === 'ENDORSEMENT_REQUEST') return n.sourceUser ? `/profile/${n.sourceUser.id}` : '/discover'

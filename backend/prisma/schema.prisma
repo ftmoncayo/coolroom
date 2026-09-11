@@ -28,7 +28,7 @@ model User {
   assignedVenueManagers VenueManager[]       @relation("VenueManagerAssignedBy")
   passwordResetTokens   PasswordResetToken[]
 
-  managerNominations         ManagerNomination[] @relation("ManagerNominationNominee")
+  managerNominations          ManagerNomination[] @relation("ManagerNominationNominee")
   respondedManagerNominations ManagerNomination[] @relation("ManagerNominationRespondedBy")
 
   sentInvites Invite[] @relation("InviteInviter")
@@ -87,26 +87,26 @@ enum ActivityType {
 }
 
 model Activity {
-  id          String       @id @default(uuid())
-  type        ActivityType
-  actorUserId String?
-  actorUser   User?        @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
-  venueId     String?
-  venue       Venue?       @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  businessId  String?
-  business    Business?    @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  noticeId    String?      @unique
-  notice      Notice?      @relation(fields: [noticeId], references: [id], onDelete: Cascade)
-  jobId       String?      @unique
-  job         Job?         @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  experienceId String?     @unique
-  experience   Experience? @relation(fields: [experienceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime     @default(now())
+  id               String       @id @default(uuid())
+  type             ActivityType
+  actorUserId      String?
+  actorUser        User?        @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+  venueId          String?
+  venue            Venue?       @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  businessId       String?
+  business         Business?    @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  noticeId         String?      @unique
+  notice           Notice?      @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  jobId            String?      @unique
+  job              Job?         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  experienceId     String?      @unique
+  experience       Experience?  @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
   // Scoped to NOTICE_POSTED only: bumped to now() whenever a new comment is
   // added to the notice, so an old notice with fresh engagement resurfaces
   // in the feed instead of staying buried under its original createdAt.
   // Every other activity type just leaves this equal to createdAt.
-  lastEngagementAt DateTime @default(now())
+  lastEngagementAt DateTime     @default(now())
 }
 
 model Notice {
@@ -132,15 +132,15 @@ enum JobFilledStatus {
 }
 
 model Job {
-  id             String    @id @default(uuid())
-  title          String
-  description    String
-  status         JobStatus @default(OPEN)
-  venueId        String
-  venue          Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  postedByUserId String
-  postedByUser   User      @relation(fields: [postedByUserId], references: [id], onDelete: Cascade)
-  createdAt      DateTime  @default(now())
+  id                   String           @id @default(uuid())
+  title                String
+  description          String
+  status               JobStatus        @default(OPEN)
+  venueId              String
+  venue                Venue            @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  postedByUserId       String
+  postedByUser         User             @relation(fields: [postedByUserId], references: [id], onDelete: Cascade)
+  createdAt            DateTime         @default(now())
   // Captured once, when the manager closes the job: did they find the right
   // person? Null until then (and stays null for jobs that are still OPEN).
   filledStatus         JobFilledStatus?
@@ -230,41 +230,45 @@ model PasswordResetToken {
 }
 
 model Profile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName         String
-  lastName          String?
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName          String
+  lastName           String?
   // Flexible-precision location: at most one of these four is ever set at a
   // time (the deepest level the person chose) - see resolveLocationScope in
   // lib/location.js, which every location-aware feature reads through rather
   // than inspecting these columns directly.
-  countryId         String?
-  country           Country? @relation(fields: [countryId], references: [id])
-  stateId           String?
-  state             State?   @relation(fields: [stateId], references: [id])
-  cityId            String?
-  city              City?    @relation(fields: [cityId], references: [id])
-  suburbId          String?
-  suburb            Suburb?  @relation(fields: [suburbId], references: [id])
-  professionalTitle String
-  rightToWork       Boolean
-  culturalIdentity  String?
+  countryId          String?
+  country            Country?  @relation(fields: [countryId], references: [id])
+  stateId            String?
+  state              State?    @relation(fields: [stateId], references: [id])
+  cityId             String?
+  city               City?     @relation(fields: [cityId], references: [id])
+  suburbId           String?
+  suburb             Suburb?   @relation(fields: [suburbId], references: [id])
+  professionalTitle  String
+  rightToWork        Boolean
+  culturalIdentity   String?
   // Free text, e.g. "English, Spanish" - not a structured multi-select like
   // Skills/KnowledgeAreas, just a single field alongside Cultural identity.
-  languages         String?
+  languages          String?
   // Handle or full URL, as entered - normalized to a link at render time
   // (see lib/instagram.js on the frontend) rather than at save time, so the
   // raw value the person typed is always what's shown back to them.
-  instagram         String?
-  about             String?
+  instagram          String?
+  about              String?
   // Owner-only setting: when true, this profile's views of OTHER people's
   // profiles are recorded anonymously (see ProfileView.anonymous) - and, in
   // exchange, GET /api/profile/me/viewers stops showing this person their
   // own named viewers too (see the route for the reciprocity rule).
-  browseAnonymously Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  browseAnonymously  Boolean   @default(false)
+  // Watermark for the lazy PROFILE_VIEW_DIGEST check in routes/notifications.js
+  // (GET /notifications and /notifications/unread-count) - null means "never
+  // checked," so the first check counts every ProfileView ever recorded.
+  lastViewerDigestAt DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   skills         Skill[]
   knowledgeAreas KnowledgeArea[]
@@ -294,18 +298,18 @@ model ProfileView {
 }
 
 model Country {
-  id        String @id @default(uuid())
-  name      String @unique
-  states    State[]
+  id         String     @id @default(uuid())
+  name       String     @unique
+  states     State[]
   businesses Business[]
-  profiles  Profile[]
+  profiles   Profile[]
 }
 
 model State {
-  id        String  @id @default(uuid())
-  name      String  @unique
+  id        String    @id @default(uuid())
+  name      String    @unique
   countryId String
-  country   Country @relation(fields: [countryId], references: [id])
+  country   Country   @relation(fields: [countryId], references: [id])
   cities    City[]
   profiles  Profile[]
 }
@@ -323,13 +327,13 @@ model City {
 }
 
 model Post {
-  id           String   @id @default(uuid())
-  authorUserId String
-  authorUser   User     @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
-  content      String
-  cityId       String?
-  city         City?    @relation(fields: [cityId], references: [id])
-  createdAt    DateTime @default(now())
+  id               String   @id @default(uuid())
+  authorUserId     String
+  authorUser       User     @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  content          String
+  cityId           String?
+  city             City?    @relation(fields: [cityId], references: [id])
+  createdAt        DateTime @default(now())
   // Bumped to now() whenever a new comment is added (see routes/engagement.js),
   // so a Post resurfaces on the city feed after fresh engagement instead of
   // staying pinned to its original post time. Every Post can bump — unlike
@@ -475,7 +479,7 @@ model Business {
   category           BusinessCategory?          @relation(fields: [categoryId], references: [id])
   about              String?
   verificationStatus BusinessVerificationStatus @default(UNVERIFIED)
-  locationScope      BusinessLocationScope       @default(SPECIFIC_CITIES)
+  locationScope      BusinessLocationScope      @default(SPECIFIC_CITIES)
   countryId          String?
   country            Country?                   @relation(fields: [countryId], references: [id])
   createdByUserId    String
@@ -619,6 +623,7 @@ enum NotificationType {
   MANAGER_NOMINATION_APPROVED
   MANAGER_NOMINATION_DECLINED
   MESSAGE
+  PROFILE_VIEW_DIGEST
 }
 
 // Reuses EngagementTargetType's POST/ACTIVITY values plus CONNECTION_REQUEST,
@@ -645,6 +650,13 @@ enum NotificationTargetType {
   // Message.id) - see routes/conversations.js, which both creates and
   // resolves these by conversation, not by individual message.
   CONVERSATION
+  // PROFILE_VIEW_DIGEST notifications: targetId is a stringified integer
+  // (the view count at digest time, e.g. "3"), not a real entity id - the
+  // count itself can't be recomputed later the way e.g. an endorsement's
+  // tier can, since it's a snapshot of "how many since lastViewerDigestAt,"
+  // and that boundary moves every time the check runs (see
+  // routes/notifications.js's runProfileViewDigestCheck).
+  PROFILE_VIEW_DIGEST
 }
 
 enum EndorsementItemType {

@@ -110,6 +110,7 @@ function formatNotification(n, itemNameById, eventInfoById, nominationTargetName
     targetName: MANAGER_NOMINATION_TYPES.includes(n.type)
       ? nominationTargetNameById.get(`${n.targetType}:${n.targetId}`) || null
       : undefined,
+    viewCount: n.type === 'PROFILE_VIEW_DIGEST' ? Number(n.targetId) : undefined,
   }
 }
 
@@ -196,6 +197,43 @@ async function runAttendanceConfirmChecks(userId) {
   }
 }
 
+// Counts ProfileView rows recorded since this user's lastViewerDigestAt (or
+// all-time if it's never been set), same lazy-check-on-read pattern as
+// runAttendanceConfirmChecks above. If there's anything new, creates one
+// PROFILE_VIEW_DIGEST notification carrying the count (targetId is a
+// stringified integer - see the NotificationTargetType comment in
+// schema.prisma for why this can't just be recomputed later). Either way,
+// lastViewerDigestAt is stamped to now so the next check's window starts
+// from here, not from the last time something was actually found. The
+// count includes anonymous-browsing views same as it would for any other
+// view - it's just a number, not an identity, so browseAnonymously's
+// reciprocity rule (no *named* viewers back) has nothing to restrict here;
+// the digest never names anyone regardless.
+async function runProfileViewDigestCheck(userId) {
+  const profile = await prisma.profile.findUnique({
+    where: { userId },
+    select: { lastViewerDigestAt: true },
+  })
+  if (!profile) return
+
+  const since = profile.lastViewerDigestAt || new Date(0)
+  const count = await prisma.profileView.count({
+    where: { viewedUserId: userId, createdAt: { gt: since } },
+  })
+
+  if (count > 0) {
+    await createNotification({
+      userId,
+      type: 'PROFILE_VIEW_DIGEST',
+      sourceUserId: null,
+      targetType: 'PROFILE_VIEW_DIGEST',
+      targetId: String(count),
+    })
+  }
+
+  await prisma.profile.update({ where: { userId }, data: { lastViewerDigestAt: new Date() } })
+}
+
 // Maps each CONNECTION_REQUEST notification's targetId (a ConnectionRequest
 // id) to that request's current status, so callers can tell which
 // connection-request notifications are still actionable.
@@ -227,6 +265,7 @@ async function filterVisibleNotifications(notifications) {
 
 router.get('/notifications', async (req, res) => {
   await runAttendanceConfirmChecks(req.userId)
+  await runProfileViewDigestCheck(req.userId)
 
   const notifications = await prisma.notification.findMany({
     where: { userId: req.userId, dismissed: false },
@@ -249,6 +288,7 @@ router.get('/notifications', async (req, res) => {
 
 router.get('/notifications/unread-count', async (req, res) => {
   await runAttendanceConfirmChecks(req.userId)
+  await runProfileViewDigestCheck(req.userId)
 
   const unread = await prisma.notification.findMany({
     where: { userId: req.userId, read: false, dismissed: false },

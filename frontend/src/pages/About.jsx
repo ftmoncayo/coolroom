@@ -53,6 +53,19 @@ function HowToUseContent() {
         </p>
       </GuideSection>
 
+      <GuideSection title="See who's viewed your profile">
+        <p>
+          Your own <Link to="/profile" className="text-accent hover:underline">Profile</Link> shows a "Who's
+          Viewed Your Profile" section — a running total for the last 30 days, plus who they were where
+          that's known. You'll also get a notification summing up any new views since you were last here.
+        </p>
+        <p>
+          Turn on "Browse anonymously" (in the profile edit form) to hide your name when you view other
+          people's profiles. It's a two-way trade: with it on, your own viewer list drops to a count too —
+          no named viewers, since seeing who viewed you and staying anonymous yourself don't come together.
+        </p>
+      </GuideSection>
+
       <GuideSection title="Connect with people you've worked with">
         <p>
           Find colleagues via <Link to="/connections" className="text-accent hover:underline">People</Link>,
@@ -98,8 +111,8 @@ function HowToUseContent() {
           <Link to="/messages" className="text-accent hover:underline">Messages</Link> are for direct
           conversations with your connections.{' '}
           <Link to="/notifications" className="text-accent hover:underline">Notifications</Link> tell you
-          about connection requests, endorsement requests and confirmations, comments and nods on your
-          activity, and anything else that needs your attention.
+          about connection requests, endorsement requests and confirmations, new profile views, comments and
+          nods on your activity, and anything else that needs your attention.
         </p>
       </GuideSection>
 

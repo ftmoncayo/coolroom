@@ -173,7 +173,7 @@ function VenueDetail() {
             >
               <VenueTypeIcon venueTypeName={venue.venueType?.name} className="h-7 w-7" />
             </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <div className="flex min-w-[12rem] flex-1 flex-col gap-0.5">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-xl font-semibold text-text">{venue.name}</h1>
                 <VerificationBadge status={venue.verificationStatus} />

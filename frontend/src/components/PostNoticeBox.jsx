@@ -1,9 +1,19 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 function PostNoticeBox({ onSubmit, onPosted }) {
   const [content, setContent] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const textareaRef = useRef(null)
+
+  function handleChange(e) {
+    setContent(e.target.value)
+    const el = textareaRef.current
+    if (el) {
+      el.style.height = 'auto'
+      el.style.height = `${el.scrollHeight}px`
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -13,6 +23,7 @@ function PostNoticeBox({ onSubmit, onPosted }) {
     try {
       await onSubmit(content.trim())
       setContent('')
+      if (textareaRef.current) textareaRef.current.style.height = ''
       onPosted?.()
     } catch (err) {
       setError(err.message)
@@ -26,11 +37,12 @@ function PostNoticeBox({ onSubmit, onPosted }) {
       <h2 className="text-xl font-semibold text-text">Post a notice</h2>
       {error && <p className="text-sm text-danger">{error}</p>}
       <textarea
+        ref={textareaRef}
         value={content}
-        onChange={(e) => setContent(e.target.value)}
+        onChange={handleChange}
         placeholder="Share an update with everyone who follows or works here..."
         rows={3}
-        className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
+        className="resize-none overflow-hidden rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
       />
       <button
         type="submit"

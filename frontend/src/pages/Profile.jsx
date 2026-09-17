@@ -18,6 +18,7 @@ import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import Section from '../components/Section'
 import { locationCountryName, rightToWorkLabel } from '../lib/location'
+import { CONTENT_TYPES } from '../lib/contentTypeColors'
 
 function Profile() {
   const location = useLocation()
@@ -192,7 +193,7 @@ function Profile() {
               onEdit={() => setEditingDetails(true)}
             />
 
-            <Section title="About Me" tone="information">
+            <Section title="About Me">
               <AboutSection
                 about={profile?.about}
                 canEdit={Boolean(profile)}
@@ -206,21 +207,19 @@ function Profile() {
               />
             </Section>
 
-            <Section title="ID Card" tone="information">
-              <dl className="grid grid-cols-1 gap-3 rounded-xl bg-section-information p-4 sm:grid-cols-2">
+            <Section title="ID Card">
+              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <dt className="text-sm text-section-information-text/70">Cultural identity / background</dt>
-                  <dd className="font-medium text-section-information-text">{profile.culturalIdentity || '—'}</dd>
+                  <dt className="text-sm text-text-faint">Cultural identity / background</dt>
+                  <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-section-information-text/70">Languages spoken</dt>
-                  <dd className="font-medium text-section-information-text">{profile.languages || '—'}</dd>
+                  <dt className="text-sm text-text-faint">Languages spoken</dt>
+                  <dd className="text-text">{profile.languages || '—'}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm text-section-information-text/70">
-                    {rightToWorkLabel(locationCountryName(profile))}
-                  </dt>
-                  <dd className="font-medium text-section-information-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
+                  <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
+                  <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
                 </div>
               </dl>
             </Section>
@@ -243,7 +242,7 @@ function Profile() {
           />
         </Section>
 
-        <Section title="Experience" tone="experience">
+        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE}>
           <ExperienceEditor
             profile={profile}
             experiences={profile?.experiences || []}
@@ -254,11 +253,11 @@ function Profile() {
           />
         </Section>
 
-        <Section id="skills" title="Skills" tone="skills">
+        <Section id="skills" title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
           <SkillsEditor profile={profile} onAdd={handleAddSkill} onRemove={handleRemoveSkill} />
         </Section>
 
-        <Section id="knowledge-bank" title="Knowledge Bank" tone="skills">
+        <Section id="knowledge-bank" title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
           <KnowledgeAreaEditor
             profile={profile}
             onAdd={handleAddKnowledgeArea}
@@ -266,7 +265,7 @@ function Profile() {
           />
         </Section>
 
-        <Section title="Certifications" tone="skills">
+        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
           <CertificationsEditor
             profile={profile}
             certifications={profile?.certifications || []}
@@ -279,7 +278,7 @@ function Profile() {
         {profile && (
           <Section
             title="Endorsements"
-            tone="skills"
+            contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}
             action={
               <button
                 type="button"
@@ -299,11 +298,11 @@ function Profile() {
           </Section>
         )}
 
-        <Section title="Training" tone="jobs">
+        <Section title="Training" contentType={CONTENT_TYPES.TRAINING}>
           <TrainingHistory />
         </Section>
 
-        <Section title="Connections" tone="people">
+        <Section title="Connections" contentType={CONTENT_TYPES.PEOPLE}>
           <ConnectionsList />
         </Section>
       </div>

@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom'
 import * as api from '../lib/api'
 import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
+import { CONTENT_TYPES, contentTypeCardStyle } from '../lib/contentTypeColors'
 
 function JobCard({ job }) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4 hover:border-border-strong hover:bg-surface-hover"
+      className="flex flex-col gap-2 rounded p-4 hover:brightness-110"
+      style={contentTypeCardStyle(CONTENT_TYPES.JOB)}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -50,7 +52,8 @@ function MyJobCard({ job }) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className="flex items-center justify-between rounded-lg border border-border bg-surface p-4 hover:border-border-strong hover:bg-surface-hover"
+      className="flex items-center justify-between rounded p-4 hover:brightness-110"
+      style={contentTypeCardStyle(CONTENT_TYPES.JOB)}
     >
       <div>
         <p className="font-medium text-text">{job.title}</p>

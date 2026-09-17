@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
+import { contentTypeCardStyle, getEventContentType } from '../../lib/contentTypeColors'
 
 function formatDate(value) {
   if (!value) return ''
@@ -38,7 +39,8 @@ function TrainingHistory() {
         {training.map((t) => (
           <div
             key={t.id}
-            className="flex items-center justify-between gap-3 rounded border border-border px-3 py-2"
+            className="flex items-center justify-between gap-3 rounded px-3 py-2"
+            style={contentTypeCardStyle(getEventContentType(t.event))}
           >
             <div>
               <Link

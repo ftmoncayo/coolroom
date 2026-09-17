@@ -5,6 +5,7 @@ import VenuePicker from '../VenuePicker'
 import VenueForm from '../venue/VenueForm'
 import VenueTypeIcon from '../venue/VenueTypeIcon'
 import Modal from '../Modal'
+import { CONTENT_TYPES, contentTypeCardStyle } from '../../lib/contentTypeColors'
 
 const emptyForm = { venue: null, roleTitle: '', startDate: '', endDate: '', isCurrent: false }
 
@@ -194,37 +195,32 @@ function ExperienceEditor({ profile, experiences, onCreate, onUpdate, onDelete, 
         {experiences.map((exp) => (
           <div
             key={exp.id}
-            className="flex items-start justify-between rounded-xl bg-section-experience p-4"
+            className="flex items-start justify-between rounded p-4"
+            style={contentTypeCardStyle(CONTENT_TYPES.EXPERIENCE)}
           >
             <div className="flex items-start gap-3">
               <VenueTypeIcon
                 venueTypeName={exp.venue.venueType?.name}
-                className="mt-1 h-5 w-5 shrink-0 text-section-experience-text/60"
+                className="mt-1 h-5 w-5 shrink-0 text-text-faint"
               />
               <div>
-                <p className="font-semibold text-section-experience-text">{exp.roleTitle}</p>
-                <Link
-                  to={`/venues/${exp.venue.id}`}
-                  className="text-sm text-section-experience-text/80 hover:text-section-experience-text hover:underline"
-                >
+                <p className="font-medium text-text">{exp.roleTitle}</p>
+                <Link to={`/venues/${exp.venue.id}`} className="text-sm text-accent hover:text-accent-hover hover:underline">
                   {exp.venue.name}
                 </Link>
-                <p className="text-sm text-section-experience-text/60">
+                <p className="text-sm text-text-faint">
                   {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
                 </p>
               </div>
             </div>
             <div className="flex gap-3 text-sm">
-              <button
-                onClick={() => setEditingId(exp.id)}
-                className="text-section-experience-text/80 hover:text-section-experience-text hover:underline"
-              >
+              <button onClick={() => setEditingId(exp.id)} className="text-accent hover:text-accent-hover hover:underline">
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(exp.id)}
                 disabled={deletingId === exp.id}
-                className="text-section-experience-text/80 hover:text-section-experience-text hover:underline disabled:opacity-50"
+                className="text-danger hover:underline disabled:opacity-50"
               >
                 Delete
               </button>

@@ -16,38 +16,32 @@ import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import PastEvents from '../components/event/PastEvents'
 import Section from '../components/Section'
+import { CONTENT_TYPES, contentTypeCardStyle, getEventContentType, isTrainingEvent } from '../lib/contentTypeColors'
 
 function formatDateTime(value) {
   if (!value) return ''
   return new Date(value).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-function isTrainingCategory(event) {
-  return (event.category?.name || '').trim().toLowerCase() === 'training'
-}
-
 function VenueJobCard({ job, canManage, onApply, applying }) {
   return (
-    <div className="rounded-xl bg-section-jobs p-4">
+    <div className="rounded p-4" style={contentTypeCardStyle(CONTENT_TYPES.JOB)}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Link
-            to={`/jobs/${job.id}`}
-            className="font-semibold text-section-jobs-text hover:underline"
-          >
+          <Link to={`/jobs/${job.id}`} className="font-medium text-text hover:text-accent hover:underline">
             {job.title}
           </Link>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-section-jobs-text/70">{job.description}</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-text-faint">{job.description}</p>
         </div>
         {canManage ? (
           <Link
             to={`/jobs/${job.id}`}
-            className="shrink-0 text-sm text-section-jobs-text/80 hover:text-section-jobs-text hover:underline"
+            className="shrink-0 text-sm text-accent hover:text-accent-hover hover:underline"
           >
             Manage
           </Link>
         ) : job.hasApplied ? (
-          <span className="shrink-0 rounded border border-section-jobs-text/40 px-3 py-1.5 text-sm font-medium text-section-jobs-text">
+          <span className="shrink-0 rounded border border-accent px-3 py-1.5 text-sm font-medium text-accent">
             Applied
           </span>
         ) : (
@@ -55,7 +49,7 @@ function VenueJobCard({ job, canManage, onApply, applying }) {
             type="button"
             disabled={applying}
             onClick={() => onApply(job.id)}
-            className="shrink-0 rounded bg-section-jobs-text px-3 py-1.5 text-sm font-medium text-text hover:opacity-90 disabled:opacity-50"
+            className="shrink-0 rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-text hover:bg-accent-hover disabled:opacity-50"
           >
             {applying ? 'Applying...' : 'Apply'}
           </button>
@@ -71,7 +65,7 @@ function VenueJobCard({ job, canManage, onApply, applying }) {
           ))}
         </div>
       )}
-      <p className="mt-3 text-sm text-section-jobs-text/70">
+      <p className="mt-3 text-sm text-text-faint">
         {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
       </p>
     </div>
@@ -111,7 +105,7 @@ function VenueDetail() {
     refreshJobs().catch(() => {})
     api
       .fetchEvents({ ownerType: 'VENUE', ownerId: id, when: 'upcoming', scope: null })
-      .then((all) => setEvents(all.filter((e) => !isTrainingCategory(e))))
+      .then((all) => setEvents(all.filter((e) => !isTrainingEvent(e))))
       .catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
@@ -246,7 +240,7 @@ function VenueDetail() {
           />
         )}
 
-        <Section title="Our Story & Culture" tone="venues">
+        <Section title="Our Story & Culture">
           <AboutSection
             about={venue.about}
             canEdit={venue.canEdit}
@@ -283,7 +277,7 @@ function VenueDetail() {
 
         <Section
           title="Events"
-          tone="jobs"
+          contentType={CONTENT_TYPES.EVENT}
           action={
             venue.canEdit && (
               <Link
@@ -301,7 +295,8 @@ function VenueDetail() {
               <Link
                 key={event.id}
                 to={`/events/${event.id}`}
-                className="flex items-center justify-between gap-3 rounded border border-border p-4 hover:border-border-strong hover:bg-surface-hover"
+                className="flex items-center justify-between gap-3 rounded p-4 hover:brightness-110"
+                style={contentTypeCardStyle(getEventContentType(event))}
               >
                 <div>
                   <p className="font-medium text-text">{event.title}</p>
@@ -317,7 +312,7 @@ function VenueDetail() {
           </div>
         </Section>
 
-        <Section title="Who We Are Looking For" tone="jobs">
+        <Section title="Who We Are Looking For" contentType={CONTENT_TYPES.JOB}>
           {jobs.length === 0 && <p className="text-sm text-text-faint">No open roles right now.</p>}
           <div className="flex flex-col gap-3">
             {jobs.map((job) => (
@@ -332,11 +327,11 @@ function VenueDetail() {
           </div>
         </Section>
 
-        <Section title="Staff" tone="people">
+        <Section title="Staff" contentType={CONTENT_TYPES.PEOPLE}>
           <VenueWorkers venueId={id} />
         </Section>
 
-        <Section title="Past Events" tone="jobs">
+        <Section title="Past Events">
           <PastEvents ownerType="VENUE" ownerId={id} canEdit={venue.canEdit} />
         </Section>
 

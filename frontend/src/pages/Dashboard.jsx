@@ -14,6 +14,7 @@ import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
 import Section from '../components/Section'
 import VenueTypeIcon from '../components/venue/VenueTypeIcon'
+import { CONTENT_TYPES, contentTypeCardStyle, getEventContentType } from '../lib/contentTypeColors'
 
 function formatDateTime(value) {
   if (!value) return ''
@@ -24,15 +25,16 @@ function HomeEventCard({ event }) {
   return (
     <Link
       to={`/events/${event.id}`}
-      className="flex items-center justify-between gap-3 rounded-xl bg-section-jobs p-4 hover:brightness-105"
+      className="flex items-center justify-between gap-3 rounded p-4 hover:brightness-110"
+      style={contentTypeCardStyle(getEventContentType(event))}
     >
       <div>
-        <p className="font-semibold text-section-jobs-text">{event.title}</p>
-        <p className="text-sm text-section-jobs-text/70">
+        <p className="font-medium text-text">{event.title}</p>
+        <p className="text-sm text-text-faint">
           {event.owner.name} · {formatDateTime(event.startAt)}
         </p>
       </div>
-      <span className="shrink-0 text-sm text-section-jobs-text/70">{event.interestCount} interested</span>
+      <span className="shrink-0 text-sm text-text-faint">{event.interestCount} interested</span>
     </Link>
   )
 }
@@ -41,14 +43,15 @@ function RecommendedJobCard({ job }) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className="flex items-center gap-3 rounded-xl bg-section-jobs p-4 hover:brightness-105"
+      className="flex items-center gap-3 rounded p-4 hover:brightness-110"
+      style={contentTypeCardStyle(CONTENT_TYPES.JOB)}
     >
-      <VenueTypeIcon venueTypeName={job.venue.venueType?.name} className="h-6 w-6 shrink-0 text-section-jobs-text/60" />
+      <VenueTypeIcon venueTypeName={job.venue.venueType?.name} className="h-6 w-6 shrink-0 text-text-faint" />
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-section-jobs-text">{job.title}</p>
-        <p className="text-sm text-section-jobs-text/70">{job.venue.name}</p>
+        <p className="font-medium text-text">{job.title}</p>
+        <p className="text-sm text-text-faint">{job.venue.name}</p>
       </div>
-      <span className="shrink-0 text-sm text-section-jobs-text/70">
+      <span className="shrink-0 text-sm text-text-faint">
         {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
       </span>
     </Link>
@@ -302,7 +305,7 @@ function Dashboard() {
           )}
         </Section>
 
-        <Section title="Events" tone="jobs" action={<MoreLink to="/events" />}>
+        <Section title="Events" contentType={CONTENT_TYPES.EVENT} action={<MoreLink to="/events" />}>
           {upcomingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
           <div className="flex flex-col gap-3">
             {upcomingEvents.map((event) => (
@@ -313,7 +316,7 @@ function Dashboard() {
 
         <Section
           title="Training"
-          tone="jobs"
+          contentType={CONTENT_TYPES.TRAINING}
           action={
             <MoreLink
               to={trainingCategoryId ? `/events?categoryId=${trainingCategoryId}&categoryName=Training` : '/events'}
@@ -328,7 +331,7 @@ function Dashboard() {
           </div>
         </Section>
 
-        <Section title="Now Recruiting" tone="jobs" action={<MoreLink to="/jobs" />}>
+        <Section title="Now Recruiting" contentType={CONTENT_TYPES.JOB} action={<MoreLink to="/jobs" />}>
           {recommendedJobs.length === 0 && (
             <p className="text-sm text-text-faint">No open roles near you right now.</p>
           )}
@@ -342,7 +345,7 @@ function Dashboard() {
         {!loading && (
           <Section
             title="People in Your Industry"
-            tone="people"
+            contentType={CONTENT_TYPES.PEOPLE}
             action={<LocationScopeFilter {...suggestionFilter.selection} onChange={suggestionFilter.setSelection} />}
           >
             {suggestions.length === 0 && <p className="text-sm text-text-faint">No one to show yet.</p>}

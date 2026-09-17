@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
+import { CONTENT_TYPES, contentTypeCardStyle } from '../../lib/contentTypeColors'
 
 function personName(profile) {
   if (!profile) return null
@@ -44,12 +45,13 @@ function ConnectionsList() {
 
       <div className="flex flex-col gap-2">
         {connections.map((c) => (
-          <div key={c.id} className="flex items-center justify-between rounded border border-border px-3 py-2">
+          <div
+            key={c.id}
+            className="flex items-center justify-between rounded px-3 py-2"
+            style={contentTypeCardStyle(CONTENT_TYPES.PEOPLE)}
+          >
             <div>
-              <Link
-                to={`/profile/${c.id}`}
-                className="text-sm text-success hover:text-success-hover hover:underline"
-              >
+              <Link to={`/profile/${c.id}`} className="text-sm font-medium text-text hover:underline">
                 {personName(c.profile) || c.email}
               </Link>
               {c.profile?.professionalTitle && (

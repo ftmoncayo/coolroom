@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
 import ConnectionButton from '../ConnectionButton'
+import { CONTENT_TYPES, contentTypeCardStyle } from '../../lib/contentTypeColors'
 
 function personName(profile) {
   return [profile.firstName, profile.lastName].filter(Boolean).join(' ')
@@ -34,13 +35,10 @@ function WorkerCard({ worker, showEndDate, currentUserId, onChange }) {
   }
 
   return (
-    <div className="rounded border border-border px-3 py-2">
+    <div className="rounded px-3 py-2" style={contentTypeCardStyle(CONTENT_TYPES.PEOPLE)}>
       <div className="flex items-center justify-between">
         <div>
-          <Link
-            to={`/profile/${worker.id}`}
-            className="text-sm font-medium text-success hover:text-success-hover hover:underline"
-          >
+          <Link to={`/profile/${worker.id}`} className="text-sm font-medium text-text hover:underline">
             {personName(worker.profile) || worker.email}
           </Link>
           <p className="text-sm text-text-faint">

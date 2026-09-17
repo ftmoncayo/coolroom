@@ -4,6 +4,7 @@ import * as api from '../lib/api'
 import SearchCombobox from '../components/SearchCombobox'
 import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
+import { contentTypeCardStyle, getEventContentType } from '../lib/contentTypeColors'
 
 function formatDateTime(value) {
   if (!value) return ''
@@ -17,7 +18,8 @@ function EventCard({ event }) {
   return (
     <Link
       to={`/events/${event.id}`}
-      className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4 hover:border-border-strong hover:bg-surface-hover"
+      className="flex flex-col gap-2 rounded p-4 hover:brightness-110"
+      style={contentTypeCardStyle(getEventContentType(event))}
     >
       <div className="flex items-start justify-between gap-3">
         <div>

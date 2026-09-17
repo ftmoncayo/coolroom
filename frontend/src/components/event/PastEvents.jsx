@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
+import { contentTypeCardStyle, getEventContentType } from '../../lib/contentTypeColors'
 
 function formatDateTime(value) {
   if (!value) return ''
@@ -37,7 +38,8 @@ function PastEvents({ ownerType, ownerId, canEdit }) {
       {events.map((event) => (
         <div
           key={event.id}
-          className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface p-4"
+          className="flex items-center justify-between gap-3 rounded p-4"
+          style={contentTypeCardStyle(getEventContentType(event))}
         >
           <Link to={`/events/${event.id}`} className="flex-1">
             <p className="font-medium text-text hover:text-accent">{event.title}</p>

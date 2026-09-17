@@ -16,6 +16,7 @@ import ProfileHeader from '../components/profile/ProfileHeader'
 import VenueTypeIcon from '../components/venue/VenueTypeIcon'
 import { locationCountryName, rightToWorkLabel } from '../lib/location'
 import { sortByLevel } from '../lib/levelLabel'
+import { CONTENT_TYPES, contentTypeCardStyle } from '../lib/contentTypeColors'
 
 function formatDate(value) {
   if (!value) return ''
@@ -134,25 +135,23 @@ function PublicProfile() {
           )}
         </ProfileHeader>
 
-        <Section title="About Me" tone="information">
+        <Section title="About Me">
           <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
         </Section>
 
-        <Section title="ID Card" tone="information">
-          <dl className="grid grid-cols-1 gap-3 rounded-xl bg-section-information p-4 sm:grid-cols-2">
+        <Section title="ID Card">
+          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <dt className="text-sm text-section-information-text/70">Cultural identity / background</dt>
-              <dd className="font-medium text-section-information-text">{profile.culturalIdentity || '—'}</dd>
+              <dt className="text-sm text-text-faint">Cultural identity / background</dt>
+              <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm text-section-information-text/70">Languages spoken</dt>
-              <dd className="font-medium text-section-information-text">{profile.languages || '—'}</dd>
+              <dt className="text-sm text-text-faint">Languages spoken</dt>
+              <dd className="text-text">{profile.languages || '—'}</dd>
             </div>
             <div>
-              <dt className="text-sm text-section-information-text/70">
-                {rightToWorkLabel(locationCountryName(profile))}
-              </dt>
-              <dd className="font-medium text-section-information-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
+              <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
+              <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
             </div>
           </dl>
         </Section>
@@ -167,23 +166,27 @@ function PublicProfile() {
           />
         </Section>
 
-        <Section title="Experience" tone="experience">
+        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE}>
           <div className="flex flex-col gap-3">
             {profile.experiences.map((exp) => (
-              <div key={exp.id} className="flex items-start gap-3 rounded-xl bg-section-experience p-4">
+              <div
+                key={exp.id}
+                className="flex items-start gap-3 rounded p-4"
+                style={contentTypeCardStyle(CONTENT_TYPES.EXPERIENCE)}
+              >
                 <VenueTypeIcon
                   venueTypeName={exp.venue.venueType?.name}
-                  className="mt-1 h-5 w-5 shrink-0 text-section-experience-text/60"
+                  className="mt-1 h-5 w-5 shrink-0 text-text-faint"
                 />
                 <div>
-                  <p className="font-semibold text-section-experience-text">{exp.roleTitle}</p>
+                  <p className="font-medium text-text">{exp.roleTitle}</p>
                   <Link
                     to={`/venues/${exp.venue.id}`}
-                    className="text-sm text-section-experience-text/80 hover:text-section-experience-text hover:underline"
+                    className="text-sm text-accent hover:text-accent-hover hover:underline"
                   >
                     {exp.venue.name}
                   </Link>
-                  <p className="text-sm text-section-experience-text/60">
+                  <p className="text-sm text-text-faint">
                     {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
                   </p>
                 </div>
@@ -195,7 +198,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Skills" tone="skills" action={<TagLevelInfo />}>
+        <Section title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.skills).map((skill) => (
               <Tag key={skill.id} level={skill.level}>
@@ -206,7 +209,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Knowledge Bank" tone="skills" action={<TagLevelInfo />}>
+        <Section title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.knowledgeAreas).map((area) => (
               <Tag key={area.id} level={area.level}>
@@ -219,12 +222,16 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Certifications" tone="skills">
+        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
           <div className="flex flex-col gap-3">
             {profile.certifications.map((cert) => (
-              <div key={cert.id} className="rounded-xl bg-section-skills p-4">
-                <p className="font-semibold text-section-skills-text">{cert.certificationType?.name}</p>
-                <p className="text-sm text-section-skills-text/70">
+              <div
+                key={cert.id}
+                className="rounded p-4"
+                style={contentTypeCardStyle(CONTENT_TYPES.SKILL_KNOWLEDGE_CERT)}
+              >
+                <p className="font-medium text-text">{cert.certificationType?.name}</p>
+                <p className="text-sm text-text-faint">
                   Issued {formatDate(cert.issueDate)}
                   {cert.expiryDate ? ` · Expires ${formatDate(cert.expiryDate)}` : ''}
                 </p>
@@ -236,7 +243,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Connections in Common" tone="people">
+        <Section title="Connections in Common" contentType={CONTENT_TYPES.PEOPLE}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {data.mutualConnections.map((person) => (
               <PersonCard key={person.id} person={person} />

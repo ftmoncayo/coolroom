@@ -30,23 +30,10 @@
   --color-warning-bg: #2c2010;
   --color-danger: #d9705c;
 
-  /* Section identity colors: one flat, matte accent per content area, used
-     for headers/icons/borders - never as a full-bleed fill, and never
-     applied to tier tags (self-declared/upskilling/tick/star stay
-     monochrome, read by icon and shape). Sampled from a reference dark
-     dashboard palette. */
-  --color-section-skills: #b4e250;
-  --color-section-skills-text: #1b1a22;
-  --color-section-experience: #f0c550;
-  --color-section-experience-text: #1b1a22;
-  --color-section-information: #52c0d6;
-  --color-section-information-text: #1b1a22;
-  --color-section-people: #597bc0;
-  --color-section-people-text: #1b1a22;
-  --color-section-jobs: #a98760;
-  --color-section-jobs-text: #1b1a22;
-  --color-section-venues: #e88254;
-  --color-section-venues-text: #1b1a22;
+  /* Content-type colors (Job/Event/Training/People/Skills-Knowledge-Cert/
+     Experience) are NOT theme tokens - they're runtime values from
+     src/lib/contentTypeColors.js, applied via inline style, since they're
+     translucent tints rather than flat utility-class fills. */
 
   /* Typography pairing: both sans-serif, kept distinct rather than
      collapsing to one face - Manrope for headings (a plainer, lighter-

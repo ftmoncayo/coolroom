@@ -74,94 +74,95 @@ function ProfileDetails({ profile, onSave, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <IdCardShell>
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
-          <IdPhotoFrame>{initials({ firstName, lastName })}</IdPhotoFrame>
-
-          <div className="flex min-w-0 flex-1 flex-col gap-4">
-            <h2 className="text-xl font-semibold uppercase tracking-wide text-text sm:pr-20">
-              {profile ? 'Edit profile' : 'Complete your profile'}
-            </h2>
-
-            {error && <p className="text-sm text-danger">{error}</p>}
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className={labelClass}>
-                First name
-                <input
-                  type="text"
-                  required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className={inputClass}
-                />
-              </label>
-
-              <label className={labelClass}>
-                Last name (optional)
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className={inputClass}
-                />
-              </label>
+        <div className="flex flex-col gap-5">
+          <div className="flex items-start gap-4">
+            <IdPhotoFrame>{initials({ firstName, lastName })}</IdPhotoFrame>
+            <div className="min-w-0 flex-1 pr-14 sm:pr-20">
+              <h2 className="text-lg font-semibold uppercase tracking-wide text-text sm:text-xl">
+                {profile ? 'Edit profile' : 'Complete your profile'}
+              </h2>
             </div>
+          </div>
 
+          {error && <p className="text-sm text-danger">{error}</p>}
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className={labelClass}>
-              Professional title
+              First name
               <input
                 type="text"
                 required
-                value={professionalTitle}
-                onChange={(e) => setProfessionalTitle(e.target.value)}
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
                 className={inputClass}
               />
             </label>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <LocationCascade
-                country={country}
-                state={state}
-                city={city}
-                suburb={suburb}
-                onCountryChange={handleCountryChange}
-                onStateChange={handleStateChange}
-                onCityChange={handleCityChange}
-                onSuburbChange={setSuburb}
-                suburbLabel="Suburb (optional)"
+            <label className={labelClass}>
+              Last name (optional)
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className={inputClass}
               />
+            </label>
+          </div>
 
-              <label className={`${labelClass} sm:col-span-2`}>
-                Cultural identity / background (optional)
-                <textarea
-                  value={culturalIdentity}
-                  onChange={(e) => setCulturalIdentity(e.target.value)}
-                  rows={3}
-                  className={inputClass}
-                />
-              </label>
+          <label className={labelClass}>
+            Professional title
+            <input
+              type="text"
+              required
+              value={professionalTitle}
+              onChange={(e) => setProfessionalTitle(e.target.value)}
+              className={inputClass}
+            />
+          </label>
 
-              <label className={labelClass}>
-                Languages spoken (optional)
-                <input
-                  type="text"
-                  value={languages}
-                  onChange={(e) => setLanguages(e.target.value)}
-                  placeholder="e.g. English, Spanish"
-                  className={inputClass}
-                />
-              </label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <LocationCascade
+              country={country}
+              state={state}
+              city={city}
+              suburb={suburb}
+              onCountryChange={handleCountryChange}
+              onStateChange={handleStateChange}
+              onCityChange={handleCityChange}
+              onSuburbChange={setSuburb}
+              suburbLabel="Suburb (optional)"
+            />
 
-              <label className="flex items-center gap-2 text-sm text-text-muted">
-                <input
-                  type="checkbox"
-                  checked={rightToWork}
-                  onChange={(e) => setRightToWork(e.target.checked)}
-                  className="h-4 w-4 accent-accent"
-                />
-                {rightToWorkLabel(country?.name)}
-              </label>
-            </div>
+            <label className={`${labelClass} sm:col-span-2`}>
+              Cultural identity / background (optional)
+              <textarea
+                value={culturalIdentity}
+                onChange={(e) => setCulturalIdentity(e.target.value)}
+                rows={3}
+                className={inputClass}
+              />
+            </label>
+
+            <label className={labelClass}>
+              Languages spoken (optional)
+              <input
+                type="text"
+                value={languages}
+                onChange={(e) => setLanguages(e.target.value)}
+                placeholder="e.g. English, Spanish"
+                className={inputClass}
+              />
+            </label>
+
+            <label className="flex items-center gap-2 text-sm text-text-muted">
+              <input
+                type="checkbox"
+                checked={rightToWork}
+                onChange={(e) => setRightToWork(e.target.checked)}
+                className="h-4 w-4 accent-accent"
+              />
+              {rightToWorkLabel(country?.name)}
+            </label>
           </div>
         </div>
       </IdCardShell>

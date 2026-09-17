@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import * as api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { useProfile } from '../context/ProfileContext'
-import ProfileHeader from '../components/profile/ProfileHeader'
+import IdentityCard from '../components/profile/IdCard'
 import ProfileDetails from '../components/profile/ProfileDetails'
 import SkillsEditor from '../components/profile/SkillsEditor'
 import KnowledgeAreaEditor from '../components/profile/KnowledgeAreaEditor'
@@ -17,7 +17,7 @@ import AboutSection from '../components/AboutSection'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import Section from '../components/Section'
-import { locationCountryName, rightToWorkLabel } from '../lib/location'
+import { instagramHandle, instagramUrl } from '../lib/instagram'
 import { CONTENT_TYPES } from '../lib/contentTypeColors'
 
 function Profile() {
@@ -186,12 +186,23 @@ function Profile() {
           />
         ) : (
           <>
-            <ProfileHeader
-              profile={profile}
-              connectionsCount={profile?.connectionsCount}
-              isOwn
-              onEdit={() => setEditingDetails(true)}
-            />
+            <IdentityCard profile={profile} isOwn onEdit={() => setEditingDetails(true)} />
+
+            <div className="flex flex-wrap items-center gap-3 text-sm text-text-faint">
+              <span>
+                {profile?.connectionsCount ?? 0} connection{profile?.connectionsCount === 1 ? '' : 's'}
+              </span>
+              {profile?.instagram && (
+                <a
+                  href={instagramUrl(profile.instagram)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-accent hover:text-accent-hover hover:underline"
+                >
+                  {instagramHandle(profile.instagram)}
+                </a>
+              )}
+            </div>
 
             <Section title="About Me">
               <AboutSection
@@ -205,23 +216,6 @@ function Profile() {
                 }
                 plain
               />
-            </Section>
-
-            <Section title="ID Card">
-              <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <dt className="text-sm text-text-faint">Cultural identity / background</dt>
-                  <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-text-faint">Languages spoken</dt>
-                  <dd className="text-text">{profile.languages || '—'}</dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
-                  <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
-                </div>
-              </dl>
             </Section>
 
             {profile && (

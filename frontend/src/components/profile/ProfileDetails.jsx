@@ -1,11 +1,16 @@
 import { useState } from 'react'
 import LocationCascade from '../LocationCascade'
 import { initialLocationSelection, rightToWorkLabel } from '../../lib/location'
+import { IdCardShell, IdPhotoFrame, initials } from './IdCard'
 
-// Edit-only now - the read-only ID Card display moved out to ProfileHeader
-// (name/location/title) and a slimmed-down ID Card section (Right to work /
-// Cultural identity only). This form still edits all of it together, since
-// splitting the save flow in two wouldn't gain anything.
+const inputClass = 'rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent'
+const labelClass = 'flex flex-col gap-1 text-sm text-text-muted'
+
+// Edit mode for the identity card above (name/location/title/right to
+// work/cultural identity/languages) plus the profile-level fields that
+// live outside the card even in the read view (Instagram, browse
+// anonymously). Same card shell as the read-only IdentityCard so editing
+// doesn't swap to a differently-shaped form.
 function ProfileDetails({ profile, onSave, onCancel }) {
   const [firstName, setFirstName] = useState(profile?.firstName || '')
   const [lastName, setLastName] = useState(profile?.lastName || '')
@@ -68,100 +73,108 @@ function ProfileDetails({ profile, onSave, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <h2 className="text-xl font-semibold uppercase tracking-wide text-text">
-        {profile ? 'Edit profile' : 'Complete your profile'}
-      </h2>
+      <IdCardShell>
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <IdPhotoFrame>{initials({ firstName, lastName })}</IdPhotoFrame>
 
-      {error && <p className="text-sm text-danger">{error}</p>}
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            <h2 className="text-xl font-semibold uppercase tracking-wide text-text sm:pr-20">
+              {profile ? 'Edit profile' : 'Complete your profile'}
+            </h2>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm text-text-muted">
-          First name
-          <input
-            type="text"
-            required
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
-          />
-        </label>
+            {error && <p className="text-sm text-danger">{error}</p>}
 
-        <label className="flex flex-col gap-1 text-sm text-text-muted">
-          Last name (optional)
-          <input
-            type="text"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
-          />
-        </label>
-      </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className={labelClass}>
+                First name
+                <input
+                  type="text"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <LocationCascade
-          country={country}
-          state={state}
-          city={city}
-          suburb={suburb}
-          onCountryChange={handleCountryChange}
-          onStateChange={handleStateChange}
-          onCityChange={handleCityChange}
-          onSuburbChange={setSuburb}
-          suburbLabel="Suburb (optional)"
-        />
-      </div>
+              <label className={labelClass}>
+                Last name (optional)
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            </div>
 
-      <label className="flex flex-col gap-1 text-sm text-text-muted">
-        Professional title
-        <input
-          type="text"
-          required
-          value={professionalTitle}
-          onChange={(e) => setProfessionalTitle(e.target.value)}
-          className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
-        />
-      </label>
+            <label className={labelClass}>
+              Professional title
+              <input
+                type="text"
+                required
+                value={professionalTitle}
+                onChange={(e) => setProfessionalTitle(e.target.value)}
+                className={inputClass}
+              />
+            </label>
 
-      <label className="flex flex-col gap-1 text-sm text-text-muted">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <LocationCascade
+                country={country}
+                state={state}
+                city={city}
+                suburb={suburb}
+                onCountryChange={handleCountryChange}
+                onStateChange={handleStateChange}
+                onCityChange={handleCityChange}
+                onSuburbChange={setSuburb}
+                suburbLabel="Suburb (optional)"
+              />
+
+              <label className={`${labelClass} sm:col-span-2`}>
+                Cultural identity / background (optional)
+                <textarea
+                  value={culturalIdentity}
+                  onChange={(e) => setCulturalIdentity(e.target.value)}
+                  rows={3}
+                  className={inputClass}
+                />
+              </label>
+
+              <label className={labelClass}>
+                Languages spoken (optional)
+                <input
+                  type="text"
+                  value={languages}
+                  onChange={(e) => setLanguages(e.target.value)}
+                  placeholder="e.g. English, Spanish"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="flex items-center gap-2 text-sm text-text-muted">
+                <input
+                  type="checkbox"
+                  checked={rightToWork}
+                  onChange={(e) => setRightToWork(e.target.checked)}
+                  className="h-4 w-4 accent-accent"
+                />
+                {rightToWorkLabel(country?.name)}
+              </label>
+            </div>
+          </div>
+        </div>
+      </IdCardShell>
+
+      <label className={labelClass}>
         Instagram (optional)
         <input
           type="text"
           value={instagram}
           onChange={(e) => setInstagram(e.target.value)}
           placeholder="@handle or full URL"
-          className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
+          className={inputClass}
         />
-      </label>
-
-      <label className="flex flex-col gap-1 text-sm text-text-muted">
-        Cultural identity / background (optional)
-        <textarea
-          value={culturalIdentity}
-          onChange={(e) => setCulturalIdentity(e.target.value)}
-          rows={3}
-          className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1 text-sm text-text-muted">
-        Languages spoken (optional)
-        <input
-          type="text"
-          value={languages}
-          onChange={(e) => setLanguages(e.target.value)}
-          placeholder="e.g. English, Spanish"
-          className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
-        />
-      </label>
-
-      <label className="flex items-center gap-2 text-sm text-text-muted">
-        <input
-          type="checkbox"
-          checked={rightToWork}
-          onChange={(e) => setRightToWork(e.target.checked)}
-          className="h-4 w-4 accent-accent"
-        />
-        {rightToWorkLabel(country?.name)}
       </label>
 
       <label className="flex items-start gap-2 text-sm text-text-muted">

@@ -35,6 +35,11 @@
      src/lib/contentTypeColors.js, applied via inline style, since they're
      translucent tints rather than flat utility-class fills. */
 
+  /* Badge accent: the ID card's own header-stripe/wordmark color - a brand
+     mark, not a content-type indicator, so it's separate from the palette
+     above and never reused for a list/category. */
+  --color-badge: #c9a15a;
+
   /* Typography pairing: both sans-serif, kept distinct rather than
      collapsing to one face - Manrope for headings (a plainer, lighter-
      weight display face than the old Fraunces serif), Work Sans for body. */

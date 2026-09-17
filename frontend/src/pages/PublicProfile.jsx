@@ -12,9 +12,9 @@ import PersonCard from '../components/PersonCard'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import Section from '../components/Section'
-import ProfileHeader from '../components/profile/ProfileHeader'
+import IdentityCard from '../components/profile/IdCard'
 import VenueTypeIcon from '../components/venue/VenueTypeIcon'
-import { locationCountryName, rightToWorkLabel } from '../lib/location'
+import { instagramHandle, instagramUrl } from '../lib/instagram'
 import { sortByLevel } from '../lib/levelLabel'
 import { CONTENT_TYPES, contentTypeCardStyle } from '../lib/contentTypeColors'
 
@@ -105,55 +105,56 @@ function PublicProfile() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
-        <ProfileHeader
-          profile={profile}
-          connectionsCount={profile.connectionsCount}
-          extraStat={[
-            `${data.mutualConnections.length} connection${data.mutualConnections.length === 1 ? '' : 's'} in common`,
-            `${data.sharedVenuesCount} venue${data.sharedVenuesCount === 1 ? '' : 's'} in common`,
-          ]}
-        >
-          <ConnectionButton
-            status={data.connectionStatus}
-            onConnect={handleConnect}
-            onAccept={handleAccept}
-            onDecline={handleDecline}
-          />
-          {data.connectionStatus === 'connected' && (
-            <>
-              <button
-                type="button"
-                onClick={handleMessage}
-                className="rounded border border-border-strong px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover"
+        <IdentityCard profile={profile} />
+
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center gap-3 text-sm text-text-faint">
+            <span>
+              {profile.connectionsCount ?? 0} connection{profile.connectionsCount === 1 ? '' : 's'}
+            </span>
+            {profile.instagram && (
+              <a
+                href={instagramUrl(profile.instagram)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-accent hover:text-accent-hover hover:underline"
               >
-                Message
-              </button>
-              <button type="button" onClick={handleRemove} className="text-sm text-danger hover:underline">
-                Remove connection
-              </button>
-            </>
-          )}
-        </ProfileHeader>
+                {instagramHandle(profile.instagram)}
+              </a>
+            )}
+          </div>
+          <p className="text-sm text-text-faint">
+            {data.mutualConnections.length} connection{data.mutualConnections.length === 1 ? '' : 's'} in common
+          </p>
+          <p className="text-sm text-text-faint">
+            {data.sharedVenuesCount} venue{data.sharedVenuesCount === 1 ? '' : 's'} in common
+          </p>
+          <div className="flex flex-wrap items-center gap-3">
+            <ConnectionButton
+              status={data.connectionStatus}
+              onConnect={handleConnect}
+              onAccept={handleAccept}
+              onDecline={handleDecline}
+            />
+            {data.connectionStatus === 'connected' && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleMessage}
+                  className="rounded border border-border-strong px-3 py-1.5 text-sm text-text-muted hover:bg-surface-hover"
+                >
+                  Message
+                </button>
+                <button type="button" onClick={handleRemove} className="text-sm text-danger hover:underline">
+                  Remove connection
+                </button>
+              </>
+            )}
+          </div>
+        </div>
 
         <Section title="About Me">
           <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
-        </Section>
-
-        <Section title="ID Card">
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-text-faint">Cultural identity / background</dt>
-              <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-text-faint">Languages spoken</dt>
-              <dd className="text-text">{profile.languages || '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
-              <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
-            </div>
-          </dl>
         </Section>
 
         <Section title="Recent Activity">

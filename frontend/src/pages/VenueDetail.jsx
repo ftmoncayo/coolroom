@@ -240,7 +240,7 @@ function VenueDetail() {
           />
         )}
 
-        <Section title="Our Story & Culture">
+        <Section title="Our Story & Culture" topRule>
           <AboutSection
             about={venue.about}
             canEdit={venue.canEdit}
@@ -252,6 +252,7 @@ function VenueDetail() {
 
         <Section
           title="Updates and Announcements"
+          topRule
           action={
             venue.canEdit && (
               <Link
@@ -278,6 +279,7 @@ function VenueDetail() {
         <Section
           title="Events"
           contentType={CONTENT_TYPES.EVENT}
+          topRule
           action={
             venue.canEdit && (
               <Link
@@ -312,7 +314,7 @@ function VenueDetail() {
           </div>
         </Section>
 
-        <Section title="Who We Are Looking For" contentType={CONTENT_TYPES.JOB}>
+        <Section title="Who We Are Looking For" contentType={CONTENT_TYPES.JOB} topRule>
           {jobs.length === 0 && <p className="text-sm text-text-faint">No open roles right now.</p>}
           <div className="flex flex-col gap-3">
             {jobs.map((job) => (
@@ -327,11 +329,11 @@ function VenueDetail() {
           </div>
         </Section>
 
-        <Section title="Staff" contentType={CONTENT_TYPES.PEOPLE}>
+        <Section title="Staff" contentType={CONTENT_TYPES.PEOPLE} topRule>
           <VenueWorkers venueId={id} />
         </Section>
 
-        <Section title="Past Events">
+        <Section title="Past Events" topRule>
           <PastEvents ownerType="VENUE" ownerId={id} canEdit={venue.canEdit} />
         </Section>
 

@@ -204,7 +204,7 @@ function Profile() {
               )}
             </div>
 
-            <Section title="About Me">
+            <Section title="About Me" topRule>
               <AboutSection
                 about={profile?.about}
                 canEdit={Boolean(profile)}
@@ -219,14 +219,14 @@ function Profile() {
             </Section>
 
             {profile && (
-              <Section title="Who's Viewed Your Profile">
+              <Section title="Who's Viewed Your Profile" topRule>
                 <ProfileViewers browseAnonymously={profile.browseAnonymously} />
               </Section>
             )}
           </>
         )}
 
-        <Section title="Recent Activity">
+        <Section title="Recent Activity" topRule>
           <ShowMore
             items={activity}
             initialCount={2}
@@ -236,7 +236,7 @@ function Profile() {
           />
         </Section>
 
-        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE}>
+        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE} topRule>
           <ExperienceEditor
             profile={profile}
             experiences={profile?.experiences || []}
@@ -247,11 +247,11 @@ function Profile() {
           />
         </Section>
 
-        <Section id="skills" title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
+        <Section id="skills" title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule>
           <SkillsEditor profile={profile} onAdd={handleAddSkill} onRemove={handleRemoveSkill} />
         </Section>
 
-        <Section id="knowledge-bank" title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
+        <Section id="knowledge-bank" title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule>
           <KnowledgeAreaEditor
             profile={profile}
             onAdd={handleAddKnowledgeArea}
@@ -259,7 +259,7 @@ function Profile() {
           />
         </Section>
 
-        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
+        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule>
           <CertificationsEditor
             profile={profile}
             certifications={profile?.certifications || []}
@@ -273,6 +273,7 @@ function Profile() {
           <Section
             title="Endorsements"
             contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}
+            topRule
             action={
               <button
                 type="button"
@@ -292,11 +293,11 @@ function Profile() {
           </Section>
         )}
 
-        <Section title="Training" contentType={CONTENT_TYPES.TRAINING}>
+        <Section title="Training" contentType={CONTENT_TYPES.TRAINING} topRule>
           <TrainingHistory />
         </Section>
 
-        <Section title="Connections" contentType={CONTENT_TYPES.PEOPLE}>
+        <Section title="Connections" contentType={CONTENT_TYPES.PEOPLE} topRule>
           <ConnectionsList />
         </Section>
       </div>

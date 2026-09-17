@@ -153,11 +153,11 @@ function PublicProfile() {
           </div>
         </div>
 
-        <Section title="About Me">
+        <Section title="About Me" topRule>
           <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
         </Section>
 
-        <Section title="Recent Activity">
+        <Section title="Recent Activity" topRule>
           <ShowMore
             items={activity}
             initialCount={2}
@@ -167,7 +167,7 @@ function PublicProfile() {
           />
         </Section>
 
-        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE}>
+        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE} topRule>
           <div className="flex flex-col gap-3">
             {profile.experiences.map((exp) => (
               <div
@@ -199,7 +199,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} action={<TagLevelInfo />}>
+        <Section title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.skills).map((skill) => (
               <Tag key={skill.id} level={skill.level}>
@@ -210,7 +210,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} action={<TagLevelInfo />}>
+        <Section title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.knowledgeAreas).map((area) => (
               <Tag key={area.id} level={area.level}>
@@ -223,7 +223,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
+        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule>
           <div className="flex flex-col gap-3">
             {profile.certifications.map((cert) => (
               <div
@@ -244,7 +244,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Connections in Common" contentType={CONTENT_TYPES.PEOPLE}>
+        <Section title="Connections in Common" contentType={CONTENT_TYPES.PEOPLE} topRule>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {data.mutualConnections.map((person) => (
               <PersonCard key={person.id} person={person} />

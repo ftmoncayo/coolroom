@@ -28,23 +28,26 @@ function isTrainingCategory(event) {
 
 function VenueJobCard({ job, canManage, onApply, applying }) {
   return (
-    <div className="rounded border border-border p-4">
+    <div className="rounded-xl bg-section-jobs p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Link to={`/jobs/${job.id}`} className="font-medium text-text hover:text-accent hover:underline">
+          <Link
+            to={`/jobs/${job.id}`}
+            className="font-semibold text-section-jobs-text hover:underline"
+          >
             {job.title}
           </Link>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-text-faint">{job.description}</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-section-jobs-text/70">{job.description}</p>
         </div>
         {canManage ? (
           <Link
             to={`/jobs/${job.id}`}
-            className="shrink-0 text-sm text-accent hover:text-accent-hover hover:underline"
+            className="shrink-0 text-sm text-section-jobs-text/80 hover:text-section-jobs-text hover:underline"
           >
             Manage
           </Link>
         ) : job.hasApplied ? (
-          <span className="shrink-0 rounded border border-accent px-3 py-1.5 text-sm font-medium text-accent">
+          <span className="shrink-0 rounded border border-section-jobs-text/40 px-3 py-1.5 text-sm font-medium text-section-jobs-text">
             Applied
           </span>
         ) : (
@@ -52,7 +55,7 @@ function VenueJobCard({ job, canManage, onApply, applying }) {
             type="button"
             disabled={applying}
             onClick={() => onApply(job.id)}
-            className="shrink-0 rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-text hover:bg-accent-hover disabled:opacity-50"
+            className="shrink-0 rounded bg-section-jobs-text px-3 py-1.5 text-sm font-medium text-text hover:opacity-90 disabled:opacity-50"
           >
             {applying ? 'Applying...' : 'Apply'}
           </button>
@@ -68,7 +71,7 @@ function VenueJobCard({ job, canManage, onApply, applying }) {
           ))}
         </div>
       )}
-      <p className="mt-3 text-sm text-text-faint">
+      <p className="mt-3 text-sm text-section-jobs-text/70">
         {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
       </p>
     </div>

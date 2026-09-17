@@ -192,7 +192,10 @@ function ExperienceEditor({ profile, experiences, onCreate, onUpdate, onDelete, 
 
       <div className="flex flex-col gap-3">
         {experiences.map((exp) => (
-          <div key={exp.id} className="flex items-start justify-between rounded border border-border p-4">
+          <div
+            key={exp.id}
+            className="flex items-start justify-between rounded border-l-[3px] border-y border-r border-border border-l-section-experience p-4"
+          >
             <div className="flex items-start gap-3">
               <VenueTypeIcon
                 venueTypeName={exp.venue.venueType?.name}

@@ -134,7 +134,7 @@ function PublicProfile() {
           )}
         </ProfileHeader>
 
-        <Section title="ID Card">
+        <Section title="ID Card" tone="information">
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <dt className="text-sm text-text-faint">Cultural identity / background</dt>
@@ -151,7 +151,7 @@ function PublicProfile() {
           </dl>
         </Section>
 
-        <Section title="About Me">
+        <Section title="About Me" tone="information">
           <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
         </Section>
 
@@ -165,10 +165,10 @@ function PublicProfile() {
           />
         </Section>
 
-        <Section title="Experience">
+        <Section title="Experience" tone="experience">
           <div className="flex flex-col gap-3">
             {profile.experiences.map((exp) => (
-              <div key={exp.id} className="flex items-start gap-3 rounded border border-border p-4">
+              <div key={exp.id} className="flex items-start gap-3 rounded border-l-[3px] border-y border-r border-border border-l-section-experience p-4">
                 <VenueTypeIcon
                   venueTypeName={exp.venue.venueType?.name}
                   className="mt-1 h-5 w-5 shrink-0 text-text-faint"
@@ -193,7 +193,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Skills" action={<TagLevelInfo />}>
+        <Section title="Skills" tone="skills" action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.skills).map((skill) => (
               <Tag key={skill.id} level={skill.level}>
@@ -204,7 +204,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Knowledge Bank" action={<TagLevelInfo />}>
+        <Section title="Knowledge Bank" tone="skills" action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.knowledgeAreas).map((area) => (
               <Tag key={area.id} level={area.level}>
@@ -217,10 +217,10 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Certifications">
+        <Section title="Certifications" tone="skills">
           <div className="flex flex-col gap-3">
             {profile.certifications.map((cert) => (
-              <div key={cert.id} className="rounded border border-border p-4">
+              <div key={cert.id} className="rounded border-l-[3px] border-y border-r border-border border-l-section-skills p-4">
                 <p className="font-medium text-text">{cert.certificationType?.name}</p>
                 <p className="text-sm text-text-faint">
                   Issued {formatDate(cert.issueDate)}
@@ -234,7 +234,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Connections in Common">
+        <Section title="Connections in Common" tone="people">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {data.mutualConnections.map((person) => (
               <PersonCard key={person.id} person={person} />

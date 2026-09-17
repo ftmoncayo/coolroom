@@ -302,7 +302,7 @@ function Dashboard() {
           )}
         </Section>
 
-        <Section title="Events" action={<MoreLink to="/events" />}>
+        <Section title="Events" tone="jobs" action={<MoreLink to="/events" />}>
           {upcomingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
           <div className="flex flex-col gap-3">
             {upcomingEvents.map((event) => (
@@ -313,6 +313,7 @@ function Dashboard() {
 
         <Section
           title="Training"
+          tone="jobs"
           action={
             <MoreLink
               to={trainingCategoryId ? `/events?categoryId=${trainingCategoryId}&categoryName=Training` : '/events'}
@@ -327,7 +328,7 @@ function Dashboard() {
           </div>
         </Section>
 
-        <Section title="Now Recruiting" action={<MoreLink to="/jobs" />}>
+        <Section title="Now Recruiting" tone="jobs" action={<MoreLink to="/jobs" />}>
           {recommendedJobs.length === 0 && (
             <p className="text-sm text-text-faint">No open roles near you right now.</p>
           )}
@@ -341,6 +342,7 @@ function Dashboard() {
         {!loading && (
           <Section
             title="People in Your Industry"
+            tone="people"
             action={<LocationScopeFilter {...suggestionFilter.selection} onChange={suggestionFilter.setSelection} />}
           >
             {suggestions.length === 0 && <p className="text-sm text-text-faint">No one to show yet.</p>}

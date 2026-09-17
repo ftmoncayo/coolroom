@@ -243,7 +243,7 @@ function VenueDetail() {
           />
         )}
 
-        <Section title="Our Story & Culture">
+        <Section title="Our Story & Culture" tone="venues">
           <AboutSection
             about={venue.about}
             canEdit={venue.canEdit}
@@ -280,6 +280,7 @@ function VenueDetail() {
 
         <Section
           title="Events"
+          tone="jobs"
           action={
             venue.canEdit && (
               <Link
@@ -313,7 +314,7 @@ function VenueDetail() {
           </div>
         </Section>
 
-        <Section title="Who We Are Looking For">
+        <Section title="Who We Are Looking For" tone="jobs">
           {jobs.length === 0 && <p className="text-sm text-text-faint">No open roles right now.</p>}
           <div className="flex flex-col gap-3">
             {jobs.map((job) => (
@@ -328,11 +329,11 @@ function VenueDetail() {
           </div>
         </Section>
 
-        <Section title="Staff">
+        <Section title="Staff" tone="people">
           <VenueWorkers venueId={id} />
         </Section>
 
-        <Section title="Past Events">
+        <Section title="Past Events" tone="jobs">
           <PastEvents ownerType="VENUE" ownerId={id} canEdit={venue.canEdit} />
         </Section>
 

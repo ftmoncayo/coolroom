@@ -192,7 +192,7 @@ function Profile() {
               onEdit={() => setEditingDetails(true)}
             />
 
-            <Section title="ID Card">
+            <Section title="ID Card" tone="information">
               <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <dt className="text-sm text-text-faint">Cultural identity / background</dt>
@@ -217,7 +217,7 @@ function Profile() {
           </>
         )}
 
-        <Section title="About Me">
+        <Section title="About Me" tone="information">
           <AboutSection
             about={profile?.about}
             canEdit={Boolean(profile)}
@@ -241,7 +241,7 @@ function Profile() {
           />
         </Section>
 
-        <Section title="Experience">
+        <Section title="Experience" tone="experience">
           <ExperienceEditor
             profile={profile}
             experiences={profile?.experiences || []}
@@ -252,11 +252,11 @@ function Profile() {
           />
         </Section>
 
-        <Section id="skills" title="Skills">
+        <Section id="skills" title="Skills" tone="skills">
           <SkillsEditor profile={profile} onAdd={handleAddSkill} onRemove={handleRemoveSkill} />
         </Section>
 
-        <Section id="knowledge-bank" title="Knowledge Bank">
+        <Section id="knowledge-bank" title="Knowledge Bank" tone="skills">
           <KnowledgeAreaEditor
             profile={profile}
             onAdd={handleAddKnowledgeArea}
@@ -264,7 +264,7 @@ function Profile() {
           />
         </Section>
 
-        <Section title="Certifications">
+        <Section title="Certifications" tone="skills">
           <CertificationsEditor
             profile={profile}
             certifications={profile?.certifications || []}
@@ -277,6 +277,7 @@ function Profile() {
         {profile && (
           <Section
             title="Endorsements"
+            tone="skills"
             action={
               <button
                 type="button"
@@ -296,11 +297,11 @@ function Profile() {
           </Section>
         )}
 
-        <Section title="Training">
+        <Section title="Training" tone="jobs">
           <TrainingHistory />
         </Section>
 
-        <Section title="Connections">
+        <Section title="Connections" tone="people">
           <ConnectionsList />
         </Section>
       </div>

@@ -1,32 +1,52 @@
 @import "tailwindcss";
 
 @theme {
-  /* Background scale */
-  --color-bg: #17140f;
-  --color-surface: #221f18;
-  --color-surface-hover: #2b2720;
+  /* Background scale - layered dark: card surfaces sit visibly lighter than
+     the page itself, rather than one flat dark tone */
+  --color-bg: #1b1a22;
+  --color-surface: #2c2b36;
+  --color-surface-hover: #35333f;
 
   /* Borders: subtle for decorative dividers, strong for interactive boundaries (WCAG 1.4.11) */
-  --color-border: #3d3728;
-  --color-border-strong: #7a6f4c;
+  --color-border: #403e4c;
+  --color-border-strong: #575364;
 
   /* Text */
-  --color-text: #f3ede1;
-  --color-text-muted: #b3a68e;
-  --color-text-faint: #8a7d67;
+  --color-text: #f5f3f7;
+  --color-text-muted: #a6a2b3;
+  --color-text-faint: #7a7689;
 
-  /* Accent: brass/gold, used deliberately and sparingly */
-  --color-accent: #c9a15a;
-  --color-accent-hover: #d9b46e;
-  --color-accent-text: #17140f;
+  /* Accent: kept neutral so color stays reserved for section identity below */
+  --color-accent: #f5f3f7;
+  --color-accent-hover: #ffffff;
+  --color-accent-text: #1b1a22;
 
-  /* Semantic status colors (distinct from the brand accent) */
-  --color-success: #8fbb7a;
-  --color-success-hover: #a3cf8f;
-  --color-success-bg: #1e2818;
-  --color-warning: #d9b36c;
-  --color-warning-bg: #332711;
-  --color-danger: #e0917a;
+  /* Semantic status colors (distinct from the brand accent and from the
+     section identity colors below) */
+  --color-success: #6fcb8b;
+  --color-success-hover: #86d69f;
+  --color-success-bg: #16241c;
+  --color-warning: #e0a64d;
+  --color-warning-bg: #2c2010;
+  --color-danger: #d9705c;
+
+  /* Section identity colors: one flat, matte accent per content area, used
+     for headers/icons/borders - never as a full-bleed fill, and never
+     applied to tier tags (self-declared/upskilling/tick/star stay
+     monochrome, read by icon and shape). Sampled from a reference dark
+     dashboard palette. */
+  --color-section-skills: #b4e250;
+  --color-section-skills-text: #1b1a22;
+  --color-section-experience: #f0c550;
+  --color-section-experience-text: #1b1a22;
+  --color-section-information: #93d8e6;
+  --color-section-information-text: #1b1a22;
+  --color-section-people: #b6a3e6;
+  --color-section-people-text: #1b1a22;
+  --color-section-jobs: #9c98a8;
+  --color-section-jobs-text: #1b1a22;
+  --color-section-venues: #e88254;
+  --color-section-venues-text: #1b1a22;
 
   /* Typography pairing: both sans-serif, kept distinct rather than
      collapsing to one face - Manrope for headings (a plainer, lighter-

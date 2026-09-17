@@ -96,14 +96,14 @@ function BusinessDetail() {
           />
         ) : (
           <div className="rounded-lg border border-border bg-surface p-6">
-            <div className="flex items-start justify-between">
-              <div>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-[12rem] flex-1">
                 <h2 className="text-xl font-semibold text-text">{business.name}</h2>
                 <div className="mt-1">
                   <VerificationBadge status={business.verificationStatus} />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex shrink-0 flex-wrap items-center gap-3">
                 <button
                   type="button"
                   onClick={handleToggleFollow}

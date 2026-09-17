@@ -134,25 +134,27 @@ function PublicProfile() {
           )}
         </ProfileHeader>
 
-        <Section title="ID Card" tone="information">
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-text-faint">Cultural identity / background</dt>
-              <dd className="text-text">{profile.culturalIdentity || '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-text-faint">Languages spoken</dt>
-              <dd className="text-text">{profile.languages || '—'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-text-faint">{rightToWorkLabel(locationCountryName(profile))}</dt>
-              <dd className="text-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
-            </div>
-          </dl>
-        </Section>
-
         <Section title="About Me" tone="information">
           <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
+        </Section>
+
+        <Section title="ID Card" tone="information">
+          <dl className="grid grid-cols-1 gap-3 rounded-xl bg-section-information p-4 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm text-section-information-text/70">Cultural identity / background</dt>
+              <dd className="font-medium text-section-information-text">{profile.culturalIdentity || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-section-information-text/70">Languages spoken</dt>
+              <dd className="font-medium text-section-information-text">{profile.languages || '—'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-section-information-text/70">
+                {rightToWorkLabel(locationCountryName(profile))}
+              </dt>
+              <dd className="font-medium text-section-information-text">{profile.rightToWork ? 'Yes' : 'No'}</dd>
+            </div>
+          </dl>
         </Section>
 
         <Section title="Recent Activity">

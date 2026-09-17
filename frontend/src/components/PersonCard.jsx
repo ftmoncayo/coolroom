@@ -6,19 +6,16 @@ function personName(profile) {
 
 function PersonCard({ person, extra, children }) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4">
+    <div className="flex flex-col gap-3 rounded-xl bg-section-people p-4">
       <div>
-        <Link
-          to={`/profile/${person.id}`}
-          className="font-semibold text-success hover:text-success-hover hover:underline"
-        >
+        <Link to={`/profile/${person.id}`} className="font-semibold text-section-people-text hover:underline">
           {personName(person.profile) || person.email}
         </Link>
-        <p className="text-sm text-text-muted">{person.profile.professionalTitle}</p>
-        <p className="text-sm text-text-faint">{person.profile.city?.name || 'No city set'}</p>
+        <p className="text-sm text-section-people-text/70">{person.profile.professionalTitle}</p>
+        <p className="text-sm text-section-people-text/60">{person.profile.city?.name || 'No city set'}</p>
       </div>
 
-      {extra && <p className="text-sm text-text-faint">{extra}</p>}
+      {extra && <p className="text-sm text-section-people-text/60">{extra}</p>}
 
       {children && <div>{children}</div>}
     </div>

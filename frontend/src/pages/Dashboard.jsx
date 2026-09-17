@@ -24,15 +24,15 @@ function HomeEventCard({ event }) {
   return (
     <Link
       to={`/events/${event.id}`}
-      className="flex items-center justify-between gap-3 rounded border border-border p-4 hover:border-border-strong hover:bg-surface-hover"
+      className="flex items-center justify-between gap-3 rounded-xl bg-section-jobs p-4 hover:brightness-105"
     >
       <div>
-        <p className="font-medium text-text">{event.title}</p>
-        <p className="text-sm text-text-faint">
+        <p className="font-semibold text-section-jobs-text">{event.title}</p>
+        <p className="text-sm text-section-jobs-text/70">
           {event.owner.name} · {formatDateTime(event.startAt)}
         </p>
       </div>
-      <span className="shrink-0 text-sm text-text-faint">{event.interestCount} interested</span>
+      <span className="shrink-0 text-sm text-section-jobs-text/70">{event.interestCount} interested</span>
     </Link>
   )
 }
@@ -41,14 +41,14 @@ function RecommendedJobCard({ job }) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className="flex items-center gap-3 rounded border border-border p-4 hover:border-border-strong hover:bg-surface-hover"
+      className="flex items-center gap-3 rounded-xl bg-section-jobs p-4 hover:brightness-105"
     >
-      <VenueTypeIcon venueTypeName={job.venue.venueType?.name} className="h-6 w-6 shrink-0 text-text-faint" />
+      <VenueTypeIcon venueTypeName={job.venue.venueType?.name} className="h-6 w-6 shrink-0 text-section-jobs-text/60" />
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-text">{job.title}</p>
-        <p className="text-sm text-text-faint">{job.venue.name}</p>
+        <p className="font-semibold text-section-jobs-text">{job.title}</p>
+        <p className="text-sm text-section-jobs-text/70">{job.venue.name}</p>
       </div>
-      <span className="shrink-0 text-sm text-text-faint">
+      <span className="shrink-0 text-sm text-section-jobs-text/70">
         {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
       </span>
     </Link>

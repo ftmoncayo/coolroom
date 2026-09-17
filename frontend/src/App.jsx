@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
 import About from './pages/About'
 import Login from './pages/Login'
@@ -43,332 +43,337 @@ import MessageThread from './pages/MessageThread'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import TopNav from './components/TopNav'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
+  const location = useLocation()
+
   return (
     <>
       <TopNav />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/waitlist" element={<Waitlist />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/:userId"
-          element={
-            <ProtectedRoute>
-              <PublicProfile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/venues"
-          element={
-            <ProtectedRoute>
-              <VenueDirectory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/venues/mine"
-          element={
-            <ProtectedRoute>
-              <VenueDirectory mine />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/venues/new"
-          element={
-            <ProtectedRoute>
-              <VenueCreate />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/venues/:id"
-          element={
-            <ProtectedRoute>
-              <VenueDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/businesses"
-          element={
-            <ProtectedRoute>
-              <BusinessDirectory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/businesses/mine"
-          element={
-            <ProtectedRoute>
-              <BusinessDirectory mine />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/businesses/new"
-          element={
-            <ProtectedRoute>
-              <BusinessCreate />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/businesses/:id"
-          element={
-            <ProtectedRoute>
-              <BusinessDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/jobs"
-          element={
-            <ProtectedRoute>
-              <JobsDirectory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/jobs/mine"
-          element={
-            <ProtectedRoute>
-              <JobsDirectory mine />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/jobs/:id"
-          element={
-            <ProtectedRoute>
-              <JobDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/jobs/:id/applications"
-          element={
-            <ProtectedRoute>
-              <JobApplications />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/venues/:venueId/jobs/new"
-          element={
-            <ProtectedRoute>
-              <JobCreate />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/events"
-          element={
-            <ProtectedRoute>
-              <EventsDirectory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/events/mine"
-          element={
-            <ProtectedRoute>
-              <EventsDirectory mine />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/events/:id"
-          element={
-            <ProtectedRoute>
-              <EventDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/venues/:ownerId/events/new"
-          element={
-            <ProtectedRoute>
-              <EventCreate ownerType="VENUE" />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/businesses/:ownerId/events/new"
-          element={
-            <ProtectedRoute>
-              <EventCreate ownerType="BUSINESS" />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/discover"
-          element={
-            <ProtectedRoute>
-              <DiscoverPeople />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/invite"
-          element={
-            <ProtectedRoute>
-              <InviteSomeone />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/connections"
-          element={
-            <ProtectedRoute>
-              <Connections />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/connections/requests"
-          element={
-            <ProtectedRoute>
-              <ConnectionRequests />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/notifications"
-          element={
-            <ProtectedRoute>
-              <Notifications />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/posts/:id"
-          element={
-            <ProtectedRoute>
-              <PostDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/activities/:id"
-          element={
-            <ProtectedRoute>
-              <ActivityDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/feedback"
-          element={
-            <ProtectedRoute>
-              <Feedback />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/messages"
-          element={
-            <ProtectedRoute>
-              <Messages />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/messages/:id"
-          element={
-            <ProtectedRoute>
-              <MessageThread />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/venues"
-          element={
-            <AdminRoute allowVenueAdmin>
-              <AdminVenues />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/businesses"
-          element={
-            <AdminRoute>
-              <AdminBusinesses />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <AdminRoute>
-              <AdminUsers />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/jobs"
-          element={
-            <AdminRoute>
-              <AdminJobs />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/lookups"
-          element={
-            <AdminRoute>
-              <AdminLookups />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/registration"
-          element={
-            <AdminRoute>
-              <AdminRegistration />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/feedback"
-          element={
-            <AdminRoute>
-              <AdminFeedback />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/reports"
-          element={
-            <AdminRoute allowModerator>
-              <AdminReports />
-            </AdminRoute>
-          }
-        />
-      </Routes>
+      <ErrorBoundary resetKey={location.pathname}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/waitlist" element={<Waitlist />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/:userId"
+            element={
+              <ProtectedRoute>
+                <PublicProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/venues"
+            element={
+              <ProtectedRoute>
+                <VenueDirectory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/venues/mine"
+            element={
+              <ProtectedRoute>
+                <VenueDirectory mine />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/venues/new"
+            element={
+              <ProtectedRoute>
+                <VenueCreate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/venues/:id"
+            element={
+              <ProtectedRoute>
+                <VenueDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/businesses"
+            element={
+              <ProtectedRoute>
+                <BusinessDirectory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/businesses/mine"
+            element={
+              <ProtectedRoute>
+                <BusinessDirectory mine />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/businesses/new"
+            element={
+              <ProtectedRoute>
+                <BusinessCreate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/businesses/:id"
+            element={
+              <ProtectedRoute>
+                <BusinessDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs"
+            element={
+              <ProtectedRoute>
+                <JobsDirectory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/mine"
+            element={
+              <ProtectedRoute>
+                <JobsDirectory mine />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/:id"
+            element={
+              <ProtectedRoute>
+                <JobDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/jobs/:id/applications"
+            element={
+              <ProtectedRoute>
+                <JobApplications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/venues/:venueId/jobs/new"
+            element={
+              <ProtectedRoute>
+                <JobCreate />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute>
+                <EventsDirectory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/mine"
+            element={
+              <ProtectedRoute>
+                <EventsDirectory mine />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/:id"
+            element={
+              <ProtectedRoute>
+                <EventDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/venues/:ownerId/events/new"
+            element={
+              <ProtectedRoute>
+                <EventCreate ownerType="VENUE" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/businesses/:ownerId/events/new"
+            element={
+              <ProtectedRoute>
+                <EventCreate ownerType="BUSINESS" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/discover"
+            element={
+              <ProtectedRoute>
+                <DiscoverPeople />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/invite"
+            element={
+              <ProtectedRoute>
+                <InviteSomeone />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/connections"
+            element={
+              <ProtectedRoute>
+                <Connections />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/connections/requests"
+            element={
+              <ProtectedRoute>
+                <ConnectionRequests />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/posts/:id"
+            element={
+              <ProtectedRoute>
+                <PostDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activities/:id"
+            element={
+              <ProtectedRoute>
+                <ActivityDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/feedback"
+            element={
+              <ProtectedRoute>
+                <Feedback />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages/:id"
+            element={
+              <ProtectedRoute>
+                <MessageThread />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/venues"
+            element={
+              <AdminRoute allowVenueAdmin>
+                <AdminVenues />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/businesses"
+            element={
+              <AdminRoute>
+                <AdminBusinesses />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <AdminUsers />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/jobs"
+            element={
+              <AdminRoute>
+                <AdminJobs />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/lookups"
+            element={
+              <AdminRoute>
+                <AdminLookups />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/registration"
+            element={
+              <AdminRoute>
+                <AdminRegistration />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/feedback"
+            element={
+              <AdminRoute>
+                <AdminFeedback />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <AdminRoute allowModerator>
+                <AdminReports />
+              </AdminRoute>
+            }
+          />
+        </Routes>
+      </ErrorBoundary>
     </>
   )
 }

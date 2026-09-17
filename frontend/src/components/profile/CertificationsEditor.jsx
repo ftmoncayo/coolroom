@@ -127,22 +127,25 @@ function CertificationsEditor({ profile, certifications, onCreate, onUpdate, onD
 
       <div className="flex flex-col gap-3">
         {certifications.map((cert) => (
-          <div key={cert.id} className="flex items-start justify-between rounded border border-border p-4">
+          <div key={cert.id} className="flex items-start justify-between rounded-xl bg-section-skills p-4">
             <div>
-              <p className="font-medium text-text">{cert.certificationType?.name}</p>
-              <p className="text-sm text-text-faint">
+              <p className="font-semibold text-section-skills-text">{cert.certificationType?.name}</p>
+              <p className="text-sm text-section-skills-text/70">
                 Issued {formatDate(cert.issueDate)}
                 {cert.expiryDate ? ` · Expires ${formatDate(cert.expiryDate)}` : ''}
               </p>
             </div>
             <div className="flex gap-3 text-sm">
-              <button onClick={() => setEditingId(cert.id)} className="text-accent hover:text-accent-hover hover:underline">
+              <button
+                onClick={() => setEditingId(cert.id)}
+                className="text-section-skills-text/80 hover:text-section-skills-text hover:underline"
+              >
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(cert.id)}
                 disabled={deletingId === cert.id}
-                className="text-danger hover:underline disabled:opacity-50"
+                className="text-section-skills-text/80 hover:text-section-skills-text hover:underline disabled:opacity-50"
               >
                 Delete
               </button>

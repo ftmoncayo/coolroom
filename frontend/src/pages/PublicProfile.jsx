@@ -168,20 +168,20 @@ function PublicProfile() {
         <Section title="Experience" tone="experience">
           <div className="flex flex-col gap-3">
             {profile.experiences.map((exp) => (
-              <div key={exp.id} className="flex items-start gap-3 rounded border-l-[3px] border-y border-r border-border border-l-section-experience p-4">
+              <div key={exp.id} className="flex items-start gap-3 rounded-xl bg-section-experience p-4">
                 <VenueTypeIcon
                   venueTypeName={exp.venue.venueType?.name}
-                  className="mt-1 h-5 w-5 shrink-0 text-text-faint"
+                  className="mt-1 h-5 w-5 shrink-0 text-section-experience-text/60"
                 />
                 <div>
-                  <p className="font-medium text-text">{exp.roleTitle}</p>
+                  <p className="font-semibold text-section-experience-text">{exp.roleTitle}</p>
                   <Link
                     to={`/venues/${exp.venue.id}`}
-                    className="text-sm text-accent hover:text-accent-hover hover:underline"
+                    className="text-sm text-section-experience-text/80 hover:text-section-experience-text hover:underline"
                   >
                     {exp.venue.name}
                   </Link>
-                  <p className="text-sm text-text-faint">
+                  <p className="text-sm text-section-experience-text/60">
                     {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
                   </p>
                 </div>
@@ -220,9 +220,9 @@ function PublicProfile() {
         <Section title="Certifications" tone="skills">
           <div className="flex flex-col gap-3">
             {profile.certifications.map((cert) => (
-              <div key={cert.id} className="rounded border-l-[3px] border-y border-r border-border border-l-section-skills p-4">
-                <p className="font-medium text-text">{cert.certificationType?.name}</p>
-                <p className="text-sm text-text-faint">
+              <div key={cert.id} className="rounded-xl bg-section-skills p-4">
+                <p className="font-semibold text-section-skills-text">{cert.certificationType?.name}</p>
+                <p className="text-sm text-section-skills-text/70">
                   Issued {formatDate(cert.issueDate)}
                   {cert.expiryDate ? ` · Expires ${formatDate(cert.expiryDate)}` : ''}
                 </p>

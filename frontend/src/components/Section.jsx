@@ -7,11 +7,23 @@ import { contentTypeAccentStyle } from '../lib/contentTypeColors'
 // a marker dot for category-able lists (Jobs, Events, Training, People,
 // Skills/Knowledge/Certifications, Experience); identity/bio-style sections
 // (About, ID Card, Our Story & Culture) pass no contentType and stay plain.
-function Section({ id, title, contentType, action, children }) {
+//
+// `topRule`: a thin divider above the heading, colored to match this
+// section (or a neutral border tone when there's no contentType) - staged
+// behind this prop (default off) so it can be rolled out page by page
+// rather than everywhere at once. Home is first; see Dashboard.jsx.
+function Section({ id, title, contentType, topRule = false, action, children }) {
   const accentStyle = contentType ? contentTypeAccentStyle(contentType) : null
 
   return (
     <div id={id} className="flex flex-col gap-3">
+      {topRule && (
+        <div
+          className="h-px w-full bg-border-strong"
+          style={accentStyle ? { backgroundColor: accentStyle.color } : undefined}
+          aria-hidden="true"
+        />
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2
           className="flex items-center gap-2 text-xl font-semibold uppercase tracking-wide text-text"

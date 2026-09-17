@@ -249,6 +249,7 @@ function Dashboard() {
 
         <Section
           title="Updates and Announcements"
+          topRule
           action={<LocationScopeFilter {...activityFilter.selection} onChange={activityFilter.setSelection} />}
         >
           <form onSubmit={handleCreatePost} className="flex flex-col gap-3 border-b border-border pb-6">
@@ -305,7 +306,7 @@ function Dashboard() {
           )}
         </Section>
 
-        <Section title="Events" contentType={CONTENT_TYPES.EVENT} action={<MoreLink to="/events" />}>
+        <Section title="Events" contentType={CONTENT_TYPES.EVENT} topRule action={<MoreLink to="/events" />}>
           {upcomingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
           <div className="flex flex-col gap-3">
             {upcomingEvents.map((event) => (
@@ -317,6 +318,7 @@ function Dashboard() {
         <Section
           title="Training"
           contentType={CONTENT_TYPES.TRAINING}
+          topRule
           action={
             <MoreLink
               to={trainingCategoryId ? `/events?categoryId=${trainingCategoryId}&categoryName=Training` : '/events'}
@@ -331,7 +333,7 @@ function Dashboard() {
           </div>
         </Section>
 
-        <Section title="Now Recruiting" contentType={CONTENT_TYPES.JOB} action={<MoreLink to="/jobs" />}>
+        <Section title="Now Recruiting" contentType={CONTENT_TYPES.JOB} topRule action={<MoreLink to="/jobs" />}>
           {recommendedJobs.length === 0 && (
             <p className="text-sm text-text-faint">No open roles near you right now.</p>
           )}
@@ -346,6 +348,7 @@ function Dashboard() {
           <Section
             title="People in Your Industry"
             contentType={CONTENT_TYPES.PEOPLE}
+            topRule
             action={<LocationScopeFilter {...suggestionFilter.selection} onChange={suggestionFilter.setSelection} />}
           >
             {suggestions.length === 0 && <p className="text-sm text-text-faint">No one to show yet.</p>}

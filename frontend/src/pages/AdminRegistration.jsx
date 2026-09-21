@@ -81,7 +81,7 @@ function AdminRegistration() {
                 type="text"
                 value={codeDraft}
                 onChange={(e) => setCodeDraft(e.target.value)}
-                placeholder="e.g. STAFFIE2026"
+                placeholder="e.g. COOLROOM2026"
                 className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
               />
             </label>

@@ -47,8 +47,8 @@ async function sendInvite({ inviterUserId, inviteeEmail, type, venueId = null, b
     return {
       kind: 'connection',
       message: created
-        ? 'This person already has a Staffie account, so a connection request was sent instead of an email.'
-        : 'This person already has a Staffie account and you already have a connection or pending request with them.',
+        ? 'This person already has a Coolroom account, so a connection request was sent instead of an email.'
+        : 'This person already has a Coolroom account and you already have a connection or pending request with them.',
     }
   }
 
@@ -57,7 +57,7 @@ async function sendInvite({ inviterUserId, inviteeEmail, type, venueId = null, b
       ? `${process.env.FRONTEND_URL}/venues/${venue.id}`
       : `${process.env.FRONTEND_URL}/businesses/${business.id}`
     await sendManagerNudgeEmail(normalizedEmail, { targetName, targetUrl })
-    return { kind: 'nudge_email', message: 'This person already has a Staffie account. We emailed them a link to claim this page.' }
+    return { kind: 'nudge_email', message: 'This person already has a Coolroom account. We emailed them a link to claim this page.' }
   }
 
   const rawToken = crypto.randomBytes(32).toString('hex')

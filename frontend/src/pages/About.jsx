@@ -2,14 +2,14 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 const TABS = [
-  { id: 'why', label: 'Why Staffie' },
+  { id: 'why', label: 'Why Coolroom' },
   { id: 'how-to', label: 'How to Use This' },
   { id: 'privacy', label: 'Data & Privacy' },
 ]
 
 // Copy to be supplied - see conversation. Deliberately left empty rather
 // than filled with placeholder text.
-function WhyStaffieContent() {
+function WhyCoolroomContent() {
   return null
 }
 
@@ -149,7 +149,7 @@ function About() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
-        <h1 className="text-2xl font-semibold text-text">About Staffie</h1>
+        <h1 className="text-2xl font-semibold text-text">About Coolroom</h1>
 
         <div className="flex gap-6 border-b border-border">
           {TABS.map((tab) => (
@@ -168,7 +168,7 @@ function About() {
           ))}
         </div>
 
-        {activeTab === 'why' && <WhyStaffieContent />}
+        {activeTab === 'why' && <WhyCoolroomContent />}
         {activeTab === 'how-to' && <HowToUseContent />}
         {activeTab === 'privacy' && <DataPrivacyContent />}
       </div>

@@ -52,7 +52,7 @@ router.get('/waitlist/venues', async (req, res) => {
 })
 
 // venueId and otherVenueName are mutually exclusive — an applicant either
-// points at a venue already on Staffie or names one that isn't listed yet.
+// points at a venue already on Coolroom or names one that isn't listed yet.
 router.post('/waitlist', async (req, res) => {
   const { email, name, venueId, otherVenueName } = req.body || {}
 

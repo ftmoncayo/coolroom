@@ -9,7 +9,7 @@ function Home() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-bg px-4 text-center">
-      <h1 className="text-4xl font-semibold text-text">Staffie</h1>
+      <h1 className="text-4xl font-semibold text-text">Coolroom</h1>
       <p className="text-xl text-text-muted">A network built for hospitality.</p>
       <p className="max-w-xl text-text-muted">
         Build a real profile, connect with people you've actually worked with, and get recognized for
@@ -31,7 +31,7 @@ function Home() {
         </Link>
       </div>
       <Link to="/about" className="text-sm text-text-muted hover:text-accent hover:underline">
-        About Staffie
+        About Coolroom
       </Link>
     </div>
   )

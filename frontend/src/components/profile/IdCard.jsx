@@ -18,7 +18,7 @@ export function IdCardShell({ children }) {
       <div className="h-1.5 bg-badge" aria-hidden="true" />
       <div className="relative p-5 sm:p-6">
         <span className="absolute right-4 top-4 text-[10px] font-bold uppercase tracking-[0.2em] text-text-faint">
-          Staffie
+          Coolroom
         </span>
         {children}
       </div>

@@ -31,7 +31,7 @@ function Profile() {
   const [editingDetails, setEditingDetails] = useState(false)
   const [inviteVenue, setInviteVenue] = useState(() => {
     try {
-      const raw = localStorage.getItem('staffie_invite_venue')
+      const raw = localStorage.getItem('coolroom_invite_venue')
       return raw ? JSON.parse(raw) : null
     } catch {
       return null
@@ -41,7 +41,7 @@ function Profile() {
   const [showEndorsementPanel, setShowEndorsementPanel] = useState(false)
 
   function handleDismissInviteVenue() {
-    localStorage.removeItem('staffie_invite_venue')
+    localStorage.removeItem('coolroom_invite_venue')
     setInviteVenue(null)
   }
 

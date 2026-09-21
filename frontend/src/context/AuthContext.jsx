@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
     api.setToken(data.token)
     setUser(data.user)
     if (data.inviteVenue) {
-      localStorage.setItem('staffie_invite_venue', JSON.stringify(data.inviteVenue))
+      localStorage.setItem('coolroom_invite_venue', JSON.stringify(data.inviteVenue))
     }
   }
 

@@ -41,7 +41,7 @@ function activityContent(activity) {
       const cityName = actor?.profile?.city?.name
       return (
         <>
-          <ActorLink user={actor} /> joined Staffie
+          <ActorLink user={actor} /> joined Coolroom
           {title ? ` as a ${title}` : ''}
           {cityName ? ` in ${cityName}` : ''}
         </>

@@ -1,4 +1,4 @@
-# staffie
+# Coolroom
 
 Full-stack MVP scaffold.
 

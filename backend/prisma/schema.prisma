@@ -906,7 +906,7 @@ model RegistrationSettings {
 
 // venueId and otherVenueName are mutually exclusive (enforced in the route,
 // not the schema) — an applicant either points at a venue already on
-// Staffie or names one that isn't listed yet, never both.
+// Coolroom or names one that isn't listed yet, never both.
 model Waitlist {
   id             String   @id @default(uuid())
   email          String

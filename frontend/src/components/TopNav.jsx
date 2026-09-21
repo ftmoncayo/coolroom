@@ -128,42 +128,42 @@ function TopNav() {
         </div>
       </div>
 
-      <nav className="hidden items-center gap-6 border-b border-border px-4 py-3 sm:flex">
-        {primaryLinks.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            className={({ isActive }) =>
-              `text-sm font-medium ${isActive ? 'text-accent' : 'text-text-muted hover:text-accent'}`
-            }
+      <nav className="hidden border-b border-border px-4 py-3 sm:block">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          {primaryLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                `whitespace-nowrap text-sm font-medium ${isActive ? 'text-accent' : 'text-text-muted hover:text-accent'}`
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="ml-auto whitespace-nowrap text-sm font-medium text-text-muted hover:text-danger"
           >
-            {link.label}
-          </NavLink>
-        ))}
+            Logout
+          </button>
+        </div>
         {(mineLinks.length > 0 || adminLinks.length > 0) && (
-          <>
-            <span className="h-4 w-px bg-border" aria-hidden="true" />
+          <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-3">
             {[...mineLinks, ...adminLinks].map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `text-sm font-medium ${isActive ? 'text-accent' : 'text-text-muted hover:text-accent'}`
+                  `whitespace-nowrap text-sm font-medium ${isActive ? 'text-accent' : 'text-text-muted hover:text-accent'}`
                 }
               >
                 {link.label}
               </NavLink>
             ))}
-            <span className="h-4 w-px bg-border" aria-hidden="true" />
-          </>
+          </div>
         )}
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="text-sm font-medium text-text-muted hover:text-danger"
-        >
-          Logout
-        </button>
       </nav>
 
       {menuOpen && (

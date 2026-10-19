@@ -48,7 +48,7 @@ function VenueManagersPanel({ venueId }) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-6">
+    <div className="rounded-[20px] bg-panel p-4 sm:p-5">
       <h2 className="text-xl font-semibold text-text">Manage venue managers</h2>
       <p className="mt-1 text-sm text-text-faint">
         Managers can edit this venue's details. Only admins can assign or remove managers.

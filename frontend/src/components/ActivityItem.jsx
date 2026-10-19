@@ -42,7 +42,7 @@ function activityContent(activity) {
       return (
         <>
           <ActorLink user={actor} /> joined Coolroom
-          {title ? ` as a ${title}` : ''}
+          {title ? ` as ${title}` : ''}
           {cityName ? ` in ${cityName}` : ''}
         </>
       )

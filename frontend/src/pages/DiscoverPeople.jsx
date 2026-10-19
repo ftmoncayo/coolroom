@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import * as api from '../lib/api'
 import ConnectionButton from '../components/ConnectionButton'
 import PersonCard from '../components/PersonCard'
+import { Panel } from '../components/Section'
+import { RowList } from '../components/SectionRows'
+import { CONTENT_TYPES } from '../lib/contentTypeColors'
 import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
 import { useNotifications } from '../context/NotificationsContext'
@@ -111,22 +114,26 @@ function DiscoverPeople() {
           </p>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {people.map((person) => (
-            <PersonCard
-              key={person.id}
-              person={person}
-              extra={lens === 'common' ? sharedSummary(person.shared) : null}
-            >
-              <ConnectionButton
-                status={person.connectionStatus}
-                onConnect={() => handleConnect(person)}
-                onAccept={() => handleAccept(person)}
-                onDecline={() => handleDecline(person)}
-              />
-            </PersonCard>
-          ))}
-        </div>
+        {people.length > 0 && (
+          <Panel contentType={CONTENT_TYPES.PEOPLE}>
+            <RowList>
+              {people.map((person) => (
+                <PersonCard
+                  key={person.id}
+                  person={person}
+                  extra={lens === 'common' ? sharedSummary(person.shared) : null}
+                >
+                  <ConnectionButton
+                    status={person.connectionStatus}
+                    onConnect={() => handleConnect(person)}
+                    onAccept={() => handleAccept(person)}
+                    onDecline={() => handleDecline(person)}
+                  />
+                </PersonCard>
+              ))}
+            </RowList>
+          </Panel>
+        )}
       </div>
     </div>
   )

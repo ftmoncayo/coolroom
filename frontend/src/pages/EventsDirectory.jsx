@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import * as api from '../lib/api'
 import SearchCombobox from '../components/SearchCombobox'
 import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
-import { contentTypeCardStyle, getEventContentType } from '../lib/contentTypeColors'
+import { Panel } from '../components/Section'
+import { NavRow, RowList } from '../components/SectionRows'
+import { CONTENT_TYPES } from '../lib/contentTypeColors'
+import { shouldShowInterestCount } from '../lib/interest'
 
 function formatDateTime(value) {
   if (!value) return ''
@@ -14,30 +17,29 @@ function formatDateTime(value) {
   })
 }
 
-function EventCard({ event }) {
+function EventRow({ event }) {
   return (
-    <Link
+    <NavRow
       to={`/events/${event.id}`}
-      className="flex flex-col gap-2 rounded p-4 hover:brightness-110"
-      style={contentTypeCardStyle(getEventContentType(event))}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-medium text-text">{event.title}</p>
-          <p className="text-sm text-text-muted">{event.owner.name}</p>
-        </div>
+      label={event.title}
+      meta={
         <span className="shrink-0 rounded border border-border-strong px-2 py-0.5 text-xs text-text-muted">
           {event.category.name}
         </span>
-      </div>
+      }
+    >
+      <p className="font-medium text-text">{event.title}</p>
+      <p className="text-sm text-text-muted">{event.owner.name}</p>
       <p className="text-sm text-text-faint">{formatDateTime(event.startAt)}</p>
       {event.locationVenue && (
         <p className="text-sm text-text-faint">
           {[event.locationVenue.name, event.locationVenue.city?.name].filter(Boolean).join(', ')}
         </p>
       )}
-      <p className="text-sm text-text-faint">{event.interestCount} interested</p>
-    </Link>
+      {shouldShowInterestCount(event.interestCount) && (
+        <p className="text-sm text-text-faint">{event.interestCount} interested</p>
+      )}
+    </NavRow>
   )
 }
 
@@ -86,16 +88,20 @@ function EventsDirectory({ mine = false }) {
 
         {error && <p className="text-sm text-danger">{error}</p>}
 
-        <div className="flex flex-col gap-3">
-          {!loading && events.length === 0 && (
-            <p className="text-sm text-text-faint">
-              {mine ? 'No upcoming events at anything you manage.' : 'No upcoming events found.'}
-            </p>
-          )}
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
+        {!loading && events.length === 0 && (
+          <p className="text-sm text-text-faint">
+            {mine ? 'No upcoming events at anything you manage.' : 'No upcoming events found.'}
+          </p>
+        )}
+        {events.length > 0 && (
+          <Panel contentType={CONTENT_TYPES.EVENT}>
+            <RowList>
+              {events.map((event) => (
+                <EventRow key={event.id} event={event} />
+              ))}
+            </RowList>
+          </Panel>
+        )}
       </div>
     </div>
   )

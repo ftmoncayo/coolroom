@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import * as api from '../lib/api'
 import ConnectionButton from '../components/ConnectionButton'
 import PersonCard from '../components/PersonCard'
+import { Panel } from '../components/Section'
+import { RowList } from '../components/SectionRows'
+import { CONTENT_TYPES } from '../lib/contentTypeColors'
 
 function Connections() {
   const navigate = useNavigate()
@@ -61,30 +64,34 @@ function Connections() {
           <p className="text-sm text-text-faint">You haven't connected with anyone yet.</p>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {connections.map((c) => (
-            <PersonCard key={c.id} person={c}>
-              <div className="flex items-center gap-3">
-                <ConnectionButton status="connected" />
-                <button
-                  type="button"
-                  onClick={() => handleMessage(c.id)}
-                  className="text-sm text-accent hover:text-accent-hover hover:underline"
-                >
-                  Message
-                </button>
-                <button
-                  type="button"
-                  disabled={removingId === c.id}
-                  onClick={() => handleRemove(c.id)}
-                  className="text-sm text-danger hover:underline disabled:opacity-50"
-                >
-                  Remove
-                </button>
-              </div>
-            </PersonCard>
-          ))}
-        </div>
+        {connections.length > 0 && (
+          <Panel contentType={CONTENT_TYPES.PEOPLE}>
+            <RowList>
+              {connections.map((c) => (
+                <PersonCard key={c.id} person={c}>
+                  <div className="flex items-center gap-3">
+                    <ConnectionButton status="connected" />
+                    <button
+                      type="button"
+                      onClick={() => handleMessage(c.id)}
+                      className="text-sm text-accent hover:text-accent-hover hover:underline"
+                    >
+                      Message
+                    </button>
+                    <button
+                      type="button"
+                      disabled={removingId === c.id}
+                      onClick={() => handleRemove(c.id)}
+                      className="text-sm text-danger hover:underline disabled:opacity-50"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </PersonCard>
+              ))}
+            </RowList>
+          </Panel>
+        )}
       </div>
     </div>
   )

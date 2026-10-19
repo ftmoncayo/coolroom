@@ -16,7 +16,9 @@ import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import PastEvents from '../components/event/PastEvents'
 import Section from '../components/Section'
-import { CONTENT_TYPES, contentTypeCardStyle, getEventContentType, isTrainingEvent } from '../lib/contentTypeColors'
+import { NavRow, RowList } from '../components/SectionRows'
+import { CONTENT_TYPES, isTrainingEvent } from '../lib/contentTypeColors'
+import { shouldShowInterestCount } from '../lib/interest'
 
 function formatDateTime(value) {
   if (!value) return ''
@@ -25,23 +27,16 @@ function formatDateTime(value) {
 
 function VenueJobCard({ job, canManage, onApply, applying }) {
   return (
-    <div className="rounded p-4" style={contentTypeCardStyle(CONTENT_TYPES.JOB)}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <Link to={`/jobs/${job.id}`} className="font-medium text-text hover:text-accent hover:underline">
-            {job.title}
-          </Link>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-text-faint">{job.description}</p>
-        </div>
-        {canManage ? (
-          <Link
-            to={`/jobs/${job.id}`}
-            className="shrink-0 text-sm text-accent hover:text-accent-hover hover:underline"
-          >
+    <NavRow
+      to={`/jobs/${job.id}`}
+      label={job.title}
+      aside={
+        canManage ? (
+          <Link to={`/jobs/${job.id}`} className="text-sm text-accent hover:text-accent-hover hover:underline">
             Manage
           </Link>
         ) : job.hasApplied ? (
-          <span className="shrink-0 rounded border border-accent px-3 py-1.5 text-sm font-medium text-accent">
+          <span className="rounded border border-accent px-3 py-1.5 text-sm font-medium text-accent">
             Applied
           </span>
         ) : (
@@ -49,12 +44,15 @@ function VenueJobCard({ job, canManage, onApply, applying }) {
             type="button"
             disabled={applying}
             onClick={() => onApply(job.id)}
-            className="shrink-0 rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-text hover:bg-accent-hover disabled:opacity-50"
+            className="rounded bg-accent px-3 py-1.5 text-sm font-medium text-accent-text hover:bg-accent-hover disabled:opacity-50"
           >
             {applying ? 'Applying...' : 'Apply'}
           </button>
-        )}
-      </div>
+        )
+      }
+    >
+      <p className="font-medium text-text">{job.title}</p>
+      <p className="mt-1 whitespace-pre-wrap text-sm text-text-faint">{job.description}</p>
       {(job.skills.length > 0 || job.knowledgeAreas.length > 0) && (
         <div className="mt-3 flex flex-wrap gap-2">
           {job.skills.map((s) => (
@@ -68,7 +66,7 @@ function VenueJobCard({ job, canManage, onApply, applying }) {
       <p className="mt-3 text-sm text-text-faint">
         {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
       </p>
-    </div>
+    </NavRow>
   )
 }
 
@@ -240,7 +238,7 @@ function VenueDetail() {
           />
         )}
 
-        <Section title="Our Story & Culture" topRule>
+        <Section title="Our Story & Culture">
           <AboutSection
             about={venue.about}
             canEdit={venue.canEdit}
@@ -252,7 +250,6 @@ function VenueDetail() {
 
         <Section
           title="Updates and Announcements"
-          topRule
           action={
             venue.canEdit && (
               <Link
@@ -279,7 +276,6 @@ function VenueDetail() {
         <Section
           title="Events"
           contentType={CONTENT_TYPES.EVENT}
-          topRule
           action={
             venue.canEdit && (
               <Link
@@ -292,31 +288,30 @@ function VenueDetail() {
           }
         >
           {events.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
-          <div className="flex flex-col gap-3">
+          <RowList>
             {events.map((event) => (
-              <Link
+              <NavRow
                 key={event.id}
                 to={`/events/${event.id}`}
-                className="flex items-center justify-between gap-3 rounded p-4 hover:brightness-110"
-                style={contentTypeCardStyle(getEventContentType(event))}
+                label={event.title}
+                meta={
+                  shouldShowInterestCount(event.interestCount) && (
+                    <span className="shrink-0 text-sm text-text-faint">{event.interestCount} interested</span>
+                  )
+                }
               >
-                <div>
-                  <p className="font-medium text-text">{event.title}</p>
-                  <p className="text-sm text-text-faint">
-                    {formatDateTime(event.startAt)} · {event.category.name}
-                  </p>
-                </div>
-                <span className="shrink-0 text-sm text-text-faint">
-                  {event.interestCount} interested
-                </span>
-              </Link>
+                <p className="font-medium text-text">{event.title}</p>
+                <p className="text-sm text-text-faint">
+                  {formatDateTime(event.startAt)} · {event.category.name}
+                </p>
+              </NavRow>
             ))}
-          </div>
+          </RowList>
         </Section>
 
-        <Section title="Who We Are Looking For" contentType={CONTENT_TYPES.JOB} topRule>
+        <Section title="Who We Are Looking For" contentType={CONTENT_TYPES.JOB}>
           {jobs.length === 0 && <p className="text-sm text-text-faint">No open roles right now.</p>}
-          <div className="flex flex-col gap-3">
+          <RowList>
             {jobs.map((job) => (
               <VenueJobCard
                 key={job.id}
@@ -326,14 +321,14 @@ function VenueDetail() {
                 applying={applyingId === job.id}
               />
             ))}
-          </div>
+          </RowList>
         </Section>
 
-        <Section title="Staff" contentType={CONTENT_TYPES.PEOPLE} topRule>
+        <Section title="Staff" contentType={CONTENT_TYPES.PEOPLE}>
           <VenueWorkers venueId={id} />
         </Section>
 
-        <Section title="Past Events" topRule>
+        <Section title="Past Events">
           <PastEvents ownerType="VENUE" ownerId={id} canEdit={venue.canEdit} />
         </Section>
 

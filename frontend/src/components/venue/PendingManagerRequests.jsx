@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
+import Section from '../Section'
+import { RowList, StaticRow } from '../SectionRows'
 
 function PendingManagerRequests({ venueId }) {
   const [nominations, setNominations] = useState([])
@@ -46,17 +48,15 @@ function PendingManagerRequests({ venueId }) {
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-xl font-semibold uppercase tracking-wide text-text">Pending Manager Requests</h2>
-
+    <Section title="Pending Manager Requests">
       {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="flex flex-col gap-3">
-        {!loading && nominations.length === 0 && (
-          <p className="text-sm text-text-faint">No pending requests.</p>
-        )}
+      {!loading && nominations.length === 0 && (
+        <p className="text-sm text-text-faint">No pending requests.</p>
+      )}
+      <RowList>
         {nominations.map((nomination) => (
-          <div key={nomination.id} className="rounded border border-border p-4">
+          <StaticRow key={nomination.id}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm text-text">
@@ -89,10 +89,10 @@ function PendingManagerRequests({ venueId }) {
                 </button>
               </div>
             </div>
-          </div>
+          </StaticRow>
         ))}
-      </div>
-    </div>
+      </RowList>
+    </Section>
   )
 }
 

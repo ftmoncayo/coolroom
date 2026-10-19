@@ -35,6 +35,12 @@
      src/lib/contentTypeColors.js, applied via inline style, since they're
      translucent tints rather than flat utility-class fills. */
 
+  /* Section containers: neutral panel fill (sections with no content type)
+     and the hairline used between rows inside any panel. The tinted fills
+     for category sections come from lib/contentTypeColors.js instead. */
+  --color-panel: rgba(255, 255, 255, 0.05);
+  --color-hairline: rgba(255, 255, 255, 0.08);
+
   /* Badge accent: the ID card's own header-stripe/wordmark color - a brand
      mark, not a content-type indicator, so it's separate from the palette
      above and never reused for a list/category. */

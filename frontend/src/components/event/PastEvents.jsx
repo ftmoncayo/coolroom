@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
-import { contentTypeCardStyle, getEventContentType } from '../../lib/contentTypeColors'
+import { NavRow, RowList } from '../SectionRows'
 
 function formatDateTime(value) {
   if (!value) return ''
@@ -32,40 +32,42 @@ function PastEvents({ ownerType, ownerId, canEdit }) {
   if (loading) return null
 
   return (
-    <div className="flex flex-col gap-3">
+    <>
       {error && <p className="text-sm text-danger">{error}</p>}
       {events.length === 0 && <p className="text-sm text-text-faint">No past events yet.</p>}
-      {events.map((event) => (
-        <div
-          key={event.id}
-          className="flex items-center justify-between gap-3 rounded p-4"
-          style={contentTypeCardStyle(getEventContentType(event))}
-        >
-          <Link to={`/events/${event.id}`} className="flex-1">
-            <p className="font-medium text-text hover:text-accent">{event.title}</p>
+      <RowList>
+        {events.map((event) => (
+          <NavRow
+            key={event.id}
+            to={`/events/${event.id}`}
+            label={event.title}
+            aside={
+              canEdit && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Link
+                    to={`/events/${event.id}?edit=true`}
+                    className="text-accent hover:text-accent-hover hover:underline"
+                  >
+                    Edit
+                  </Link>
+                  <Link
+                    to={`${newEventPath}?duplicateFrom=${event.id}`}
+                    className="text-accent hover:text-accent-hover hover:underline"
+                  >
+                    Duplicate
+                  </Link>
+                </div>
+              )
+            }
+          >
+            <p className="font-medium text-text">{event.title}</p>
             <p className="text-sm text-text-faint">
               {formatDateTime(event.startAt)} · {event.category.name}
             </p>
-          </Link>
-          {canEdit && (
-            <div className="flex shrink-0 items-center gap-3 text-sm">
-              <Link
-                to={`/events/${event.id}?edit=true`}
-                className="text-accent hover:text-accent-hover hover:underline"
-              >
-                Edit
-              </Link>
-              <Link
-                to={`${newEventPath}?duplicateFrom=${event.id}`}
-                className="text-accent hover:text-accent-hover hover:underline"
-              >
-                Duplicate
-              </Link>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
+          </NavRow>
+        ))}
+      </RowList>
+    </>
   )
 }
 

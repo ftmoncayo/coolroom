@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
-import { CONTENT_TYPES, contentTypeCardStyle } from '../../lib/contentTypeColors'
+import { NavRow, RowList } from '../SectionRows'
 
 function personName(profile) {
   if (!profile) return null
@@ -36,40 +35,41 @@ function ConnectionsList() {
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <>
       {error && <p className="text-sm text-danger">{error}</p>}
 
       {!loading && connections.length === 0 && (
         <p className="text-sm text-text-faint">You haven't connected with anyone yet.</p>
       )}
 
-      <div className="flex flex-col gap-2">
-        {connections.map((c) => (
-          <div
-            key={c.id}
-            className="flex items-center justify-between rounded px-3 py-2"
-            style={contentTypeCardStyle(CONTENT_TYPES.PEOPLE)}
-          >
-            <div>
-              <Link to={`/profile/${c.id}`} className="text-sm font-medium text-text hover:underline">
-                {personName(c.profile) || c.email}
-              </Link>
+      <RowList>
+        {connections.map((c) => {
+          const name = personName(c.profile) || c.email
+          return (
+            <NavRow
+              key={c.id}
+              to={`/profile/${c.id}`}
+              label={name}
+              aside={
+                <button
+                  type="button"
+                  disabled={removingId === c.id}
+                  onClick={() => handleRemove(c.id)}
+                  className="text-sm text-danger hover:underline disabled:opacity-50"
+                >
+                  Remove
+                </button>
+              }
+            >
+              <p className="text-sm font-medium text-text">{name}</p>
               {c.profile?.professionalTitle && (
                 <p className="text-sm text-text-faint">{c.profile.professionalTitle}</p>
               )}
-            </div>
-            <button
-              type="button"
-              disabled={removingId === c.id}
-              onClick={() => handleRemove(c.id)}
-              className="text-sm text-danger hover:underline disabled:opacity-50"
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
+            </NavRow>
+          )
+        })}
+      </RowList>
+    </>
   )
 }
 

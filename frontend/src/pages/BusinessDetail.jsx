@@ -11,6 +11,7 @@ import PostNoticeBox from '../components/PostNoticeBox'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import PastEvents from '../components/event/PastEvents'
+import Section from '../components/Section'
 
 function locationSummary(business) {
   if (business.locationScope === 'GLOBAL') return 'Operates globally'
@@ -197,7 +198,9 @@ function BusinessDetail() {
           />
         </div>
 
-        <PastEvents ownerType="BUSINESS" ownerId={id} canEdit={business.canEdit} />
+        <Section title="Past Events">
+          <PastEvents ownerType="BUSINESS" ownerId={id} canEdit={business.canEdit} />
+        </Section>
 
         {user?.isAdmin && <BusinessManagersPanel businessId={id} />}
       </div>

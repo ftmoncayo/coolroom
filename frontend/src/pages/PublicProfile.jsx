@@ -12,11 +12,12 @@ import PersonCard from '../components/PersonCard'
 import ActivityItem from '../components/ActivityItem'
 import ShowMore from '../components/ShowMore'
 import Section from '../components/Section'
+import { RowList, StaticRow } from '../components/SectionRows'
 import IdentityCard from '../components/profile/IdCard'
 import VenueTypeIcon from '../components/venue/VenueTypeIcon'
 import { instagramHandle, instagramUrl } from '../lib/instagram'
 import { sortByLevel } from '../lib/levelLabel'
-import { CONTENT_TYPES, contentTypeCardStyle } from '../lib/contentTypeColors'
+import { CONTENT_TYPES } from '../lib/contentTypeColors'
 
 function formatDate(value) {
   if (!value) return ''
@@ -153,11 +154,11 @@ function PublicProfile() {
           </div>
         </div>
 
-        <Section title="About Me" topRule>
+        <Section title="About Me">
           <AboutSection about={profile.about} canEdit={false} emptyMessage="Nothing here yet." plain />
         </Section>
 
-        <Section title="Recent Activity" topRule>
+        <Section title="Recent Activity">
           <ShowMore
             items={activity}
             initialCount={2}
@@ -167,39 +168,37 @@ function PublicProfile() {
           />
         </Section>
 
-        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE} topRule>
-          <div className="flex flex-col gap-3">
+        <Section title="Experience" contentType={CONTENT_TYPES.EXPERIENCE}>
+          <RowList>
             {profile.experiences.map((exp) => (
-              <div
-                key={exp.id}
-                className="flex items-start gap-3 rounded p-4"
-                style={contentTypeCardStyle(CONTENT_TYPES.EXPERIENCE)}
-              >
-                <VenueTypeIcon
-                  venueTypeName={exp.venue.venueType?.name}
-                  className="mt-1 h-5 w-5 shrink-0 text-text-faint"
-                />
-                <div>
-                  <p className="font-medium text-text">{exp.roleTitle}</p>
-                  <Link
-                    to={`/venues/${exp.venue.id}`}
-                    className="text-sm text-accent hover:text-accent-hover hover:underline"
-                  >
-                    {exp.venue.name}
-                  </Link>
-                  <p className="text-sm text-text-faint">
-                    {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
-                  </p>
+              <StaticRow key={exp.id}>
+                <div className="flex items-start gap-3">
+                  <VenueTypeIcon
+                    venueTypeName={exp.venue.venueType?.name}
+                    className="mt-1 h-5 w-5 shrink-0 text-text-faint"
+                  />
+                  <div>
+                    <p className="font-medium text-text">{exp.roleTitle}</p>
+                    <Link
+                      to={`/venues/${exp.venue.id}`}
+                      className="text-sm text-accent hover:text-accent-hover hover:underline"
+                    >
+                      {exp.venue.name}
+                    </Link>
+                    <p className="text-sm text-text-faint">
+                      {formatDate(exp.startDate)} – {exp.isCurrent ? 'Current' : formatDate(exp.endDate) || '—'}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </StaticRow>
             ))}
-            {profile.experiences.length === 0 && (
-              <p className="text-sm text-text-faint">No experience added yet.</p>
-            )}
-          </div>
+          </RowList>
+          {profile.experiences.length === 0 && (
+            <p className="text-sm text-text-faint">No experience added yet.</p>
+          )}
         </Section>
 
-        <Section title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule action={<TagLevelInfo />}>
+        <Section title="Skills" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.skills).map((skill) => (
               <Tag key={skill.id} level={skill.level}>
@@ -210,7 +209,7 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule action={<TagLevelInfo />}>
+        <Section title="Knowledge Bank" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} action={<TagLevelInfo />}>
           <div className="flex flex-wrap gap-2">
             {sortByLevel(profile.knowledgeAreas).map((area) => (
               <Tag key={area.id} level={area.level}>
@@ -223,36 +222,32 @@ function PublicProfile() {
           </div>
         </Section>
 
-        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT} topRule>
-          <div className="flex flex-col gap-3">
+        <Section title="Certifications" contentType={CONTENT_TYPES.SKILL_KNOWLEDGE_CERT}>
+          <RowList>
             {profile.certifications.map((cert) => (
-              <div
-                key={cert.id}
-                className="rounded p-4"
-                style={contentTypeCardStyle(CONTENT_TYPES.SKILL_KNOWLEDGE_CERT)}
-              >
+              <StaticRow key={cert.id}>
                 <p className="font-medium text-text">{cert.certificationType?.name}</p>
                 <p className="text-sm text-text-faint">
                   Issued {formatDate(cert.issueDate)}
                   {cert.expiryDate ? ` · Expires ${formatDate(cert.expiryDate)}` : ''}
                 </p>
-              </div>
+              </StaticRow>
             ))}
-            {profile.certifications.length === 0 && (
-              <p className="text-sm text-text-faint">No certifications added yet.</p>
-            )}
-          </div>
+          </RowList>
+          {profile.certifications.length === 0 && (
+            <p className="text-sm text-text-faint">No certifications added yet.</p>
+          )}
         </Section>
 
-        <Section title="Connections in Common" contentType={CONTENT_TYPES.PEOPLE} topRule>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Section title="Connections in Common" contentType={CONTENT_TYPES.PEOPLE}>
+          <RowList>
             {data.mutualConnections.map((person) => (
               <PersonCard key={person.id} person={person} />
             ))}
-            {data.mutualConnections.length === 0 && (
-              <p className="text-sm text-text-faint">No connections in common yet.</p>
-            )}
-          </div>
+          </RowList>
+          {data.mutualConnections.length === 0 && (
+            <p className="text-sm text-text-faint">No connections in common yet.</p>
+          )}
         </Section>
 
         <div className="flex justify-end">

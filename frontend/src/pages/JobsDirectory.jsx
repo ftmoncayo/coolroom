@@ -1,39 +1,37 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import * as api from '../lib/api'
 import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
-import { CONTENT_TYPES, contentTypeCardStyle } from '../lib/contentTypeColors'
+import { Panel } from '../components/Section'
+import { NavRow, RowList } from '../components/SectionRows'
+import { CONTENT_TYPES } from '../lib/contentTypeColors'
 
-function JobCard({ job }) {
+function JobRow({ job }) {
   return (
-    <Link
+    <NavRow
       to={`/jobs/${job.id}`}
-      className="flex flex-col gap-2 rounded p-4 hover:brightness-110"
-      style={contentTypeCardStyle(CONTENT_TYPES.JOB)}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-medium text-text">{job.title}</p>
-          <p className="text-sm text-text-muted">
-            {job.venue.name}
-            {job.venue.isFavourite && (
-              <span className="ml-2 text-accent" title="Favourited venue">
-                ★
-              </span>
-            )}
-            {!job.venue.isFavourite && job.venue.isFollowing && (
-              <span className="ml-2 text-xs text-text-faint">Following</span>
-            )}
-          </p>
-        </div>
-        {job.hasApplied && (
+      label={job.title}
+      meta={
+        job.hasApplied && (
           <span className="shrink-0 rounded border border-accent px-2 py-0.5 text-xs font-medium text-accent">
             Applied
           </span>
+        )
+      }
+    >
+      <p className="font-medium text-text">{job.title}</p>
+      <p className="text-sm text-text-muted">
+        {job.venue.name}
+        {job.venue.isFavourite && (
+          <span className="ml-2 text-accent" title="Favourited venue">
+            ★
+          </span>
         )}
-      </div>
-      <p className="text-sm text-text-faint">
+        {!job.venue.isFavourite && job.venue.isFollowing && (
+          <span className="ml-2 text-xs text-text-faint">Following</span>
+        )}
+      </p>
+      <p className="mt-1 text-sm text-text-faint">
         {job.skillMatchCount} skill{job.skillMatchCount === 1 ? '' : 's'} matched, {job.knowledgeMatchCount}{' '}
         knowledge area{job.knowledgeMatchCount === 1 ? '' : 's'} matched
       </p>
@@ -44,28 +42,29 @@ function JobCard({ job }) {
       <p className="text-sm text-text-faint">
         {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
       </p>
-    </Link>
+    </NavRow>
   )
 }
 
-function MyJobCard({ job }) {
+function MyJobRow({ job }) {
   return (
-    <Link
+    <NavRow
       to={`/jobs/${job.id}`}
-      className="flex items-center justify-between rounded p-4 hover:brightness-110"
-      style={contentTypeCardStyle(CONTENT_TYPES.JOB)}
+      label={job.title}
+      meta={
+        job.status === 'CLOSED' && (
+          <span className="shrink-0 rounded border border-border-strong px-2 py-0.5 text-xs text-text-muted">
+            Closed
+          </span>
+        )
+      }
     >
-      <div>
-        <p className="font-medium text-text">{job.title}</p>
-        <p className="text-sm text-text-muted">{job.venue.name}</p>
-        <p className="text-sm text-text-faint">
-          {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
-        </p>
-      </div>
-      {job.status === 'CLOSED' && (
-        <span className="shrink-0 rounded bg-warning-bg px-2 py-0.5 text-xs text-warning">Closed</span>
-      )}
-    </Link>
+      <p className="font-medium text-text">{job.title}</p>
+      <p className="text-sm text-text-muted">{job.venue.name}</p>
+      <p className="text-sm text-text-faint">
+        {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
+      </p>
+    </NavRow>
   )
 }
 
@@ -121,14 +120,18 @@ function JobsDirectory({ mine = false }) {
 
         {error && <p className="text-sm text-danger">{error}</p>}
 
-        <div className="flex flex-col gap-3">
-          {!loading && jobs.length === 0 && (
-            <p className="text-sm text-text-faint">
-              {mine ? 'No jobs posted at venues you manage yet.' : 'No jobs found.'}
-            </p>
-          )}
-          {jobs.map((job) => (mine ? <MyJobCard key={job.id} job={job} /> : <JobCard key={job.id} job={job} />))}
-        </div>
+        {!loading && jobs.length === 0 && (
+          <p className="text-sm text-text-faint">
+            {mine ? 'No jobs posted at venues you manage yet.' : 'No jobs found.'}
+          </p>
+        )}
+        {jobs.length > 0 && (
+          <Panel contentType={CONTENT_TYPES.JOB}>
+            <RowList>
+              {jobs.map((job) => (mine ? <MyJobRow key={job.id} job={job} /> : <JobRow key={job.id} job={job} />))}
+            </RowList>
+          </Panel>
+        )}
       </div>
     </div>
   )

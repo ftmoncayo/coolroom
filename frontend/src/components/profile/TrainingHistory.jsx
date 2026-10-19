@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import * as api from '../../lib/api'
-import { contentTypeCardStyle, getEventContentType } from '../../lib/contentTypeColors'
+import { NavRow, RowList } from '../SectionRows'
 
 function formatDate(value) {
   if (!value) return ''
@@ -29,37 +28,32 @@ function TrainingHistory() {
   }, [])
 
   return (
-    <div className="flex flex-col gap-3">
+    <>
       {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="flex flex-col gap-2">
-        {!loading && training.length === 0 && (
-          <p className="text-sm text-text-faint">No training or events yet.</p>
-        )}
+      {!loading && training.length === 0 && (
+        <p className="text-sm text-text-faint">No training or events yet.</p>
+      )}
+      <RowList>
         {training.map((t) => (
-          <div
+          <NavRow
             key={t.id}
-            className="flex items-center justify-between gap-3 rounded px-3 py-2"
-            style={contentTypeCardStyle(getEventContentType(t.event))}
+            to={`/events/${t.event.id}`}
+            label={t.event.title}
+            meta={
+              <span className="shrink-0 rounded border border-border-strong px-2 py-0.5 text-xs text-text-muted">
+                {STATUS_LABELS[t.status]}
+              </span>
+            }
           >
-            <div>
-              <Link
-                to={`/events/${t.event.id}`}
-                className="text-sm font-medium text-text hover:text-accent hover:underline"
-              >
-                {t.event.title}
-              </Link>
-              <p className="text-sm text-text-faint">
-                {t.event.category.name} · {formatDate(t.event.startAt)}
-              </p>
-            </div>
-            <span className="shrink-0 rounded border border-border-strong px-2 py-0.5 text-xs text-text-muted">
-              {STATUS_LABELS[t.status]}
-            </span>
-          </div>
+            <p className="text-sm font-medium text-text">{t.event.title}</p>
+            <p className="text-sm text-text-faint">
+              {t.event.category.name} · {formatDate(t.event.startAt)}
+            </p>
+          </NavRow>
         ))}
-      </div>
-    </div>
+      </RowList>
+    </>
   )
 }
 

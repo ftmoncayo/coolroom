@@ -13,8 +13,10 @@ import ShowMore from '../components/ShowMore'
 import LocationScopeFilter from '../components/LocationScopeFilter'
 import useLocationScopeFilter from '../hooks/useLocationScopeFilter'
 import Section from '../components/Section'
+import { NavRow, RowList } from '../components/SectionRows'
 import VenueTypeIcon from '../components/venue/VenueTypeIcon'
-import { CONTENT_TYPES, contentTypeCardStyle, getEventContentType } from '../lib/contentTypeColors'
+import { CONTENT_TYPES } from '../lib/contentTypeColors'
+import { shouldShowInterestCount } from '../lib/interest'
 
 function formatDateTime(value) {
   if (!value) return ''
@@ -23,38 +25,42 @@ function formatDateTime(value) {
 
 function HomeEventCard({ event }) {
   return (
-    <Link
+    <NavRow
       to={`/events/${event.id}`}
-      className="flex items-center justify-between gap-3 rounded p-4 hover:brightness-110"
-      style={contentTypeCardStyle(getEventContentType(event))}
+      label={event.title}
+      meta={
+        shouldShowInterestCount(event.interestCount) ? (
+          <span className="shrink-0 text-sm text-text-faint">{event.interestCount} interested</span>
+        ) : null
+      }
     >
-      <div>
-        <p className="font-medium text-text">{event.title}</p>
-        <p className="text-sm text-text-faint">
-          {event.owner.name} · {formatDateTime(event.startAt)}
-        </p>
-      </div>
-      <span className="shrink-0 text-sm text-text-faint">{event.interestCount} interested</span>
-    </Link>
+      <p className="font-medium text-text">{event.title}</p>
+      <p className="text-sm text-text-faint">
+        {event.owner.name} · {formatDateTime(event.startAt)}
+      </p>
+    </NavRow>
   )
 }
 
 function RecommendedJobCard({ job }) {
   return (
-    <Link
+    <NavRow
       to={`/jobs/${job.id}`}
-      className="flex items-center gap-3 rounded p-4 hover:brightness-110"
-      style={contentTypeCardStyle(CONTENT_TYPES.JOB)}
+      label={job.title}
+      meta={
+        <span className="shrink-0 text-sm text-text-faint">
+          {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
+        </span>
+      }
     >
-      <VenueTypeIcon venueTypeName={job.venue.venueType?.name} className="h-6 w-6 shrink-0 text-text-faint" />
-      <div className="min-w-0 flex-1">
-        <p className="font-medium text-text">{job.title}</p>
-        <p className="text-sm text-text-faint">{job.venue.name}</p>
+      <div className="flex items-center gap-3">
+        <VenueTypeIcon venueTypeName={job.venue.venueType?.name} className="h-6 w-6 shrink-0 text-text-faint" />
+        <div className="min-w-0">
+          <p className="font-medium text-text">{job.title}</p>
+          <p className="text-sm text-text-faint">{job.venue.name}</p>
+        </div>
       </div>
-      <span className="shrink-0 text-sm text-text-faint">
-        {job.applicationCount} applicant{job.applicationCount === 1 ? '' : 's'}
-      </span>
-    </Link>
+    </NavRow>
   )
 }
 
@@ -249,7 +255,6 @@ function Dashboard() {
 
         <Section
           title="Updates and Announcements"
-          topRule
           action={<LocationScopeFilter {...activityFilter.selection} onChange={activityFilter.setSelection} />}
         >
           <form onSubmit={handleCreatePost} className="flex flex-col gap-3 border-b border-border pb-6">
@@ -261,7 +266,7 @@ function Dashboard() {
               rows={3}
               className="rounded border border-border-strong bg-bg px-3 py-2 text-text focus:border-accent"
             />
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <label className="flex items-center gap-2 text-sm text-text-muted">
                 City
                 <div className="w-56">
@@ -306,19 +311,18 @@ function Dashboard() {
           )}
         </Section>
 
-        <Section title="Events" contentType={CONTENT_TYPES.EVENT} topRule action={<MoreLink to="/events" />}>
+        <Section title="Events" contentType={CONTENT_TYPES.EVENT} action={<MoreLink to="/events" />}>
           {upcomingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming events.</p>}
-          <div className="flex flex-col gap-3">
+          <RowList>
             {upcomingEvents.map((event) => (
               <HomeEventCard key={event.id} event={event} />
             ))}
-          </div>
+          </RowList>
         </Section>
 
         <Section
           title="Training"
           contentType={CONTENT_TYPES.TRAINING}
-          topRule
           action={
             <MoreLink
               to={trainingCategoryId ? `/events?categoryId=${trainingCategoryId}&categoryName=Training` : '/events'}
@@ -326,33 +330,32 @@ function Dashboard() {
           }
         >
           {trainingEvents.length === 0 && <p className="text-sm text-text-faint">No upcoming training.</p>}
-          <div className="flex flex-col gap-3">
+          <RowList>
             {trainingEvents.map((event) => (
               <HomeEventCard key={event.id} event={event} />
             ))}
-          </div>
+          </RowList>
         </Section>
 
-        <Section title="Now Recruiting" contentType={CONTENT_TYPES.JOB} topRule action={<MoreLink to="/jobs" />}>
+        <Section title="Now Recruiting" contentType={CONTENT_TYPES.JOB} action={<MoreLink to="/jobs" />}>
           {recommendedJobs.length === 0 && (
             <p className="text-sm text-text-faint">No open roles near you right now.</p>
           )}
-          <div className="flex flex-col gap-3">
+          <RowList>
             {recommendedJobs.map((job) => (
               <RecommendedJobCard key={job.id} job={job} />
             ))}
-          </div>
+          </RowList>
         </Section>
 
         {!loading && (
           <Section
             title="People in Your Industry"
             contentType={CONTENT_TYPES.PEOPLE}
-            topRule
             action={<LocationScopeFilter {...suggestionFilter.selection} onChange={suggestionFilter.setSelection} />}
           >
             {suggestions.length === 0 && <p className="text-sm text-text-faint">No one to show yet.</p>}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <RowList>
               {suggestions.map((person) => (
                 <PersonCard key={person.id} person={person}>
                   <ConnectionButton
@@ -363,7 +366,7 @@ function Dashboard() {
                   />
                 </PersonCard>
               ))}
-            </div>
+            </RowList>
           </Section>
         )}
       </div>

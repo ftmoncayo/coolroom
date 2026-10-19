@@ -41,11 +41,12 @@ export function getContentTypeColor(type) {
   return accent ? { accent, tint: hexToRgba(accent, TINT_ALPHA) } : null
 }
 
-// Style for a card/row: a translucent tint background plus a stronger
-// accent-colored left edge. Spread onto the element's `style` prop.
-export function contentTypeCardStyle(type) {
+// Style for a whole section container: the category's translucent tint,
+// applied once to the container rather than per item. Spread onto the
+// element's `style` prop (see Panel in components/Section.jsx).
+export function contentTypeContainerStyle(type) {
   const color = getContentTypeColor(type)
-  return color ? { backgroundColor: color.tint, borderLeft: `3px solid ${color.accent}` } : undefined
+  return color ? { backgroundColor: color.tint } : undefined
 }
 
 // Style for a section heading or small marker (dot/icon): just the
@@ -60,8 +61,4 @@ export function contentTypeAccentStyle(type) {
 // it lives here rather than being re-implemented per page.
 export function isTrainingEvent(event) {
   return (event?.category?.name || '').trim().toLowerCase() === 'training'
-}
-
-export function getEventContentType(event) {
-  return isTrainingEvent(event) ? CONTENT_TYPES.TRAINING : CONTENT_TYPES.EVENT
 }
